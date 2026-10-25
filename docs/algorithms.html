@@ -41,33 +41,33 @@
 
   <figure>
     <svg viewBox="0 0 680 232" role="img" aria-label="A double decomposed into mantissa and exponent, converted to a rational, then to rounded decimal digits.">
-      <g font-family="ui-monospace, Menlo, monospace" font-size="12" fill="currentColor">
+      <g font-size="13" fill="currentColor" stroke-linecap="round" stroke-linejoin="round">
         <rect x="10" y="16" width="150" height="58" fill="none" stroke="currentColor"/>
         <text x="22" y="38">double</text>
-        <text x="22" y="56" font-size="10" opacity="0.65">sign · mantissa · exp</text>
+        <text x="22" y="56" font-size="11" opacity="0.65">sign · mantissa · exp</text>
 
         <rect x="190" y="16" width="160" height="58" fill="none" stroke="currentColor"/>
         <text x="202" y="38">num / den</text>
-        <text x="202" y="56" font-size="10" opacity="0.65">m·2^e over 1 or 2^−e</text>
+        <text x="202" y="56" font-size="11" opacity="0.65">m·2^e over 1 or 2^−e</text>
 
         <rect x="380" y="16" width="150" height="58" fill="none" stroke="currentColor"/>
         <text x="392" y="38">floor_log10</text>
-        <text x="392" y="56" font-size="10" opacity="0.65">exact exponent</text>
+        <text x="392" y="56" font-size="11" opacity="0.65">exact exponent</text>
 
         <rect x="560" y="16" width="110" height="58" fill="none" stroke="currentColor"/>
         <text x="572" y="38">digits</text>
-        <text x="572" y="56" font-size="10" opacity="0.65">+ decpt</text>
+        <text x="572" y="56" font-size="11" opacity="0.65">+ decpt</text>
 
         <line x1="160" y1="45" x2="186" y2="45" stroke="currentColor" marker-end="url(#a2)"/>
         <line x1="350" y1="45" x2="376" y2="45" stroke="currentColor" marker-end="url(#a2)"/>
         <line x1="530" y1="45" x2="556" y2="45" stroke="currentColor" marker-end="url(#a2)"/>
 
         <rect x="190" y="110" width="340" height="50" fill="none" stroke="currentColor" stroke-dasharray="3 3"/>
-        <text x="202" y="131" font-size="11">q, r = divmod(num · 10^k, den)</text>
-        <text x="202" y="149" font-size="11" opacity="0.7">round up when 2r &gt; den, or 2r = den and q is odd</text>
+        <text x="202" y="131" font-size="12">q, r = divmod(num · 10^k, den)</text>
+        <text x="202" y="149" font-size="12" opacity="0.7">round up when 2r &gt; den, or 2r = den and q is odd</text>
 
-        <text x="10" y="196" font-size="11" opacity="0.75">0.1 → 3602879701896397 / 2^55 → 55 exact digits, decpt 0</text>
-        <text x="10" y="214" font-size="11" opacity="0.75">0.1000000000000000055511151231257827021181583404541015625 → "0.1"</text>
+        <text x="10" y="196" font-size="12" opacity="0.75">0.1 → 3602879701896397 / 2^55 → 55 exact digits, decpt 0</text>
+        <text x="10" y="214" font-size="12" opacity="0.75">0.1000000000000000055511151231257827021181583404541015625 → "0.1"</text>
       </g>
       <defs>
         <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
@@ -107,7 +107,7 @@
 
   <figure>
     <svg viewBox="0 0 680 200" role="img" aria-label="The six parts of a formatted number: left padding, sign, prefix, zero padding, grouped digits, point and fraction and exponent, right padding.">
-      <g font-family="ui-monospace, Menlo, monospace" font-size="11" fill="currentColor">
+      <g font-size="12" fill="currentColor">
         <rect x="10" y="30" width="70" height="44" fill="none" stroke="currentColor"/>
         <text x="18" y="57">pad</text>
 
@@ -129,9 +129,9 @@
         <rect x="558" y="30" width="60" height="44" fill="none" stroke="currentColor"/>
         <text x="566" y="57">pad</text>
 
-        <text x="10" y="128" font-size="11">=  puts padding in the “zeros” slot, and grouping reaches into it</text>
-        <text x="10" y="148" font-size="11">&lt; &gt; ^ put it outside, in the “pad” slots</text>
-        <text x="10" y="176" font-size="11" opacity="0.7">format(255, "#010_x") → 0x000_00ff</text>
+        <text x="10" y="128" font-size="12">=  puts padding in the “zeros” slot, and grouping reaches into it</text>
+        <text x="10" y="148" font-size="12">&lt; &gt; ^ put it outside, in the “pad” slots</text>
+        <text x="10" y="176" font-size="12" opacity="0.7">format(255, "#010_x") → 0x000_00ff</text>
       </g>
     </svg>
     <figcaption>Six slots; a zero flag moves the fill inward, and the separators follow it.</figcaption>

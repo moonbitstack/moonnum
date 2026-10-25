@@ -89,34 +89,42 @@
       </table>
 
       <figure>
-        <svg viewBox="0 0 680 168" role="img" aria-label="The numeric tower: integers promote to fractions, fractions to floats, floats to complex numbers.">
+        <svg viewBox="0 0 680 172" role="img" aria-label="The numeric tower: integers promote to fractions, fractions to floats, floats to complex numbers.">
           <defs>
             <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
               <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
             </marker>
+            <!-- A little noise displacement, so the boxes look ruled by hand
+                 rather than by a plotter. Text is left outside the filter:
+                 wobbling a label only makes it harder to read. -->
+            <filter id="sketch" x="-12%" y="-12%" width="124%" height="124%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.016" numOctaves="2" seed="5" result="noise"/>
+              <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.1" xChannelSelector="R" yChannelSelector="G"/>
+            </filter>
           </defs>
-          <g font-family="ui-monospace, Menlo, monospace" font-size="13" fill="currentColor">
-            <rect x="14" y="86" width="140" height="42" fill="none" stroke="currentColor" stroke-width="1"/>
-            <text x="28" y="104">Int</text>
-            <text x="28" y="118" font-size="9" opacity="0.6">BigInt · unbounded</text>
+          <g font-size="15" fill="currentColor">
+            <g filter="url(#sketch)" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="14" y="86" width="140" height="46"/>
+              <rect x="186" y="64" width="140" height="46"/>
+              <rect x="358" y="42" width="140" height="46"/>
+              <rect x="530" y="20" width="140" height="46"/>
+              <line x1="154" y1="100" x2="182" y2="87" marker-end="url(#arrow)"/>
+              <line x1="326" y1="78" x2="354" y2="65" marker-end="url(#arrow)"/>
+              <line x1="498" y1="56" x2="526" y2="43" marker-end="url(#arrow)"/>
+            </g>
+            <text x="30" y="106">Int</text>
+            <text x="30" y="122" font-size="11" opacity="0.6">BigInt · unbounded</text>
 
-            <rect x="186" y="64" width="140" height="42" fill="none" stroke="currentColor" stroke-width="1"/>
-            <text x="200" y="82">Fraction</text>
-            <text x="200" y="96" font-size="9" opacity="0.6">num/den · exact</text>
+            <text x="202" y="84">Fraction</text>
+            <text x="202" y="100" font-size="11" opacity="0.6">num/den · exact</text>
 
-            <rect x="358" y="42" width="140" height="42" fill="none" stroke="currentColor" stroke-width="1"/>
-            <text x="372" y="60">Float</text>
-            <text x="372" y="74" font-size="9" opacity="0.6">binary64</text>
+            <text x="374" y="62">Float</text>
+            <text x="374" y="78" font-size="11" opacity="0.6">binary64</text>
 
-            <rect x="530" y="20" width="140" height="42" fill="none" stroke="currentColor" stroke-width="1"/>
-            <text x="544" y="38">Complex</text>
-            <text x="544" y="52" font-size="9" opacity="0.6">two doubles</text>
+            <text x="546" y="40">Complex</text>
+            <text x="546" y="56" font-size="11" opacity="0.6">two doubles</text>
 
-            <line x1="154" y1="98" x2="182" y2="85" stroke="currentColor" stroke-width="1" marker-end="url(#arrow)"/>
-            <line x1="326" y1="76" x2="354" y2="63" stroke="currentColor" stroke-width="1" marker-end="url(#arrow)"/>
-            <line x1="498" y1="54" x2="526" y2="41" stroke="currentColor" stroke-width="1" marker-end="url(#arrow)"/>
-
-            <text x="14" y="156" font-size="10" opacity="0.65">1 == 1.0 == 3/3 == 1+0j — comparison is exact at every step</text>
+            <text x="14" y="160" font-size="12" opacity="0.65">1 == 1.0 == 3/3 == 1+0j — comparison is exact at every step</text>
           </g>
         </svg>
         <figcaption>Promotion only ever goes right. Comparison never rounds.</figcaption>
