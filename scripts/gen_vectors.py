@@ -592,7 +592,8 @@ def gen_number_parse() -> list[tuple]:
     rows = []
     literals = ["1", "-1", "0", "1.5", "1e3", "3/4", "1+2j", "2j", "-0.0",
                 "0x10", "inf", "nan", "1_000", "0.1", " 42 ", "-inf",
-                "1e-3", "(1+2j)", "-3/4", "0b101", "j"]
+                "1e-3", "(1+2j)", "-3/4", "0b101", "j", "1e5j", "0x1e",
+                "1E5j", "2i", "-0j", "1_0j", "1e", "0o17", "1.5e2j"]
     for text in literals:
         rows.append((text, number_repr(text)))
     return rows

@@ -79,8 +79,7 @@ pub fn parse(text : StringView) -> Number raise Refused {
   }
   let body = slice(s, start, end)
   let word = lowercase_ascii(body)
-  let mut kind = 'i'
-  if word == "inf" ||
+  let kind = if word == "inf" ||
     word == "infinity" ||
     word == "nan" ||
     word == "+inf" ||
@@ -89,57 +88,30 @@ pub fn parse(text : StringView) -> Number raise Refused {
     word == "-infinity" ||
     word == "+nan" ||
     word == "-nan" {
-    kind = 'f'
-  }
-  let mut i = 0
-  if body.get_char(0) == Some('+') || body.get_char(0) == Some('-') {
-    i = 1
-  }
-  let hex_prefixed = i + 1 < body.length() &&
-    body.get_char(i) == Some('0') &&
-    (
-      body.get_char(i + 1) == Some('x') ||
-      body.get_char(i + 1) == Some('X') ||
-      body.get_char(i + 1) == Some('o') ||
-      body.get_char(i + 1) == Some('O') ||
-      body.get_char(i + 1) == Some('b') ||
-      body.get_char(i + 1) == Some('B')
-    )
-  if kind != 'f' {
-    while i < body.length() {
-      match body.get_char(i).unwrap() {
-        '/' => {
-          kind = 'r'
-          break
-        }
-        'j' | 'J' | 'i' | 'I' => {
-          kind = 'c'
-          break
-        }
-        '.' => {
-          kind = 'f'
-          break
-        }
-        'e' | 'E' =>
-          if !hex_prefixed {
-            kind = 'f'
-            break
-          }
-        _ => ()
-      }
-      i += 1
-    }
+    'f'
+  } else if is_prefixed_int(body) {
+    // A base prefix settles it: `0x1e` is thirty, not a float in disguise.
+    'i'
+  } else if ends_with_imaginary(body) || body.get_char(0) == Some('(') {
+    // A bracketed literal is complex, as `(1+2j)` is: nothing else is wrapped.
+    'c'
+  } else if body.contains_char('/') {
+    'r'
+  } else if body.contains_char('.') || has_exponent(body) {
+    'f'
+  } else {
+    'i'
   }
   match kind {
-    'r' =>
-      Number::Fraction(
-        parse_fraction(text) catch {
-          (err : Refused) => raise err
-        },
-      )
     'c' =>
       Number::Complex(
         parse_complex(text) catch {
+          (err : Refused) => raise err
+        },
+      )
+    'r' =>
+      Number::Fraction(
+        parse_fraction(text) catch {
           (err : Refused) => raise err
         },
       )
@@ -152,6 +124,68 @@ pub fn parse(text : StringView) -> Number raise Refused {
         },
       )
   }
+}
+
+///|
+/// Whether the literal starts with a base prefix, after an optional sign.
+fn is_prefixed_int(body : String) -> Bool {
+  let mut i = 0
+  if body.get_char(0) == Some('+') || body.get_char(0) == Some('-') {
+    i = 1
+  }
+  if i + 1 >= body.length() || body.get_char(i) != Some('0') {
+    return false
+  }
+  match body.get_char(i + 1).unwrap().to_ascii_lowercase() {
+    'x' | 'o' | 'b' => true
+    _ => false
+  }
+}
+
+///|
+/// Whether the literal ends in `j` or `i`, which makes it a complex number even
+/// if it also contains an exponent: `1e5j` is one hundred thousand j.
+fn ends_with_imaginary(body : String) -> Bool {
+  if body.length() == 0 {
+    return false
+  }
+  match body.get_char(body.length() - 1).unwrap().to_ascii_lowercase() {
+    'j' | 'i' => true
+    _ => false
+  }
+}
+
+///|
+/// Whether the literal has a decimal exponent, which makes it a float.
+fn has_exponent(body : String) -> Bool {
+  let mut i = 0
+  while i < body.length() {
+    match body.get_char(i).unwrap().to_ascii_lowercase() {
+      'e' => {
+        // `e` needs a digit on either side to be an exponent.
+        let before = i > 0 && is_digit(body.get_char(i - 1).unwrap())
+        let mut after = i + 1 < body.length() &&
+          (
+            is_digit(body.get_char(i + 1).unwrap()) ||
+            body.get_char(i + 1) == Some('+') ||
+            body.get_char(i + 1) == Some('-')
+          )
+        if after {
+          let mut j = i + 1
+          if body.get_char(j) == Some('+') || body.get_char(j) == Some('-') {
+            j += 1
+          }
+          after = j < body.length() && is_digit(body.get_char(j).unwrap())
+        }
+        if before && after {
+          return true
+        }
+      }
+      _ => ()
+    }
+    i += 1
+  }
+  false
 }
 
 ///|
