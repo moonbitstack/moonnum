@@ -34,9 +34,11 @@ graph TD
   number["number.mbt<br/>the numeric tower"]
   format["format.mbt<br/>the format-spec mini-language"]
 
+  decimal --> float_text
   decimal --> float
   decimal --> fraction
   decimal --> format
+  float_text --> float
   int --> fraction
   int --> number
   float --> complex
@@ -327,7 +329,8 @@ pub fn Complex::abs(self) -> Double
 pub fn Complex::conjugate(self) -> Complex
 pub fn Complex::pow(self, w : Complex) -> Complex
 pub fn repr_complex(z : Complex) -> String
-// impl Add, Sub, Mul, Div, Neg, Eq, Show, Default
+pub fn Complex::divide(self, other : Complex) -> Complex raise Refused
+// impl Add, Sub, Mul, Neg, Eq, Show, Default
 
 // fraction.mbt
 pub(all) struct Fraction { num : BigInt, den : BigInt }
@@ -347,7 +350,10 @@ pub fn Fraction::round_big(self) -> BigInt
 pub fn Fraction::round(self, ndigits~ : Int) -> Fraction
 pub fn Fraction::limit_denominator(self, max~ : BigInt) -> Fraction raise Refused
 pub fn repr_fraction(f : Fraction) -> String
-// impl Add, Sub, Mul, Div, Neg, Eq, Compare, Show, Default
+pub fn Fraction::divide(self, other : Fraction) -> Fraction raise Refused
+pub fn Fraction::floor_divide_big(self, other : Fraction) -> BigInt raise Refused
+pub fn Fraction::modulo(self, other : Fraction) -> Fraction raise Refused
+// impl Add, Sub, Mul, Neg, Eq, Compare, Show, Default
 
 // number.mbt
 pub(all) enum Number { Int(BigInt); Float(Double); Complex(Complex); Fraction(Fraction) }
@@ -356,9 +362,14 @@ pub fn Number::compare_numeric(self, other : Number) -> Int raise Refused
 pub fn Number::equal_numeric(self, other : Number) -> Bool
 pub fn Number::floordiv(self, other : Number) -> Number raise Refused
 pub fn Number::floor_mod(self, other : Number) -> Number raise Refused
+pub fn Number::divide(self, other : Number) -> Number raise Refused
+pub fn Number::add(self, other : Number) -> Number
+pub fn Number::sub(self, other : Number) -> Number
+pub fn Number::mul(self, other : Number) -> Number
+pub fn Number::neg(self) -> Number
 pub fn Number::pow(self, exp : Number) -> Number raise Refused
 pub fn Number::to_double(self) -> Double raise Refused
-// impl Add, Sub, Mul, Div, Neg, Eq, Show
+// impl Add, Sub, Mul, Neg, Eq, Show
 
 // format.mbt
 pub fn format(value : Number, spec : StringView) -> String raise Refused
@@ -375,6 +386,11 @@ does not own, so everything that operates on `Double` or `BigInt` is a free
 function. Methods are used where the receiver is ours (`Complex`, `Fraction`,
 `Number`), which is also where chaining reads better.
 
+**Division is a function.** MoonBit's `Div` trait cannot raise, and a numeric
+library that panics on a zero divisor is worse than one that returns
+`ZeroDivision`. So `Fraction::divide` and `Complex::divide` are named functions,
+and `Number::divide` is the mixed-kind entry point.
+
 **`power`, not `pow`.** Core's `BigInt::pow` exists with a different contract;
 two `pow`s in one scope would make every call site ask which one it got.
 `Complex::pow` is ours, so it keeps Python's name.
@@ -387,22 +403,25 @@ is explicit in the name, and both are tested against the same half-to-even rule.
 
 | file | contains | public? |
 |:--|:--|:--|
-| `src/refused.mbt` | `Refused` and the internal `raise` helpers | type only |
-| `src/decimal.mbt` | `Dec`, `dtoa`, `floor_log10`, rounding, `pow10`, digit grouping | no |
-| `src/spec.mbt` | `Spec` parsing and the six-part layout | no |
+| `src/refused.mbt` | `Refused` and the internal `raise` helper | type only |
+| `src/decimal.mbt` | rationals to digits: `floor_log10`, half-to-even rounding, `pow10`, grouping | no |
+| `src/float_text.mbt` | `dtoa`, `format_float_short`, `float.hex` | `float_hex` only |
 | `src/int.mbt` | integer functions over `BigInt` | yes |
-| `src/float.mbt` | float parse/print/hex/round | yes |
-| `src/complex.mbt` | `Complex` and CPython's arithmetic | yes |
+| `src/float.mbt` | float parse, repr, hex, round | yes |
+| `src/complex.mbt` | `Complex` and the C99 arithmetic | yes |
 | `src/fraction.mbt` | `Fraction` | yes |
 | `src/number.mbt` | `Number`, `parse`, the tower | yes |
-| `src/format.mbt` | the mini-language | yes |
+| `src/format.mbt` | `Spec` parsing, the six-part layout, every presentation type | yes |
+| `src/vectors_wbtest.mbt` | the generated cases, and only that | tests only |
 
 ## Testing
 
-`scripts/gen_vectors.py` runs CPython and writes `src/vectors.mbt`: literal
-arrays of input and expected output, one array per subject. Tests in
-`src/*_test.mbt` iterate over those arrays and compare. No Python runs in CI, and
-no test computes an expected value with the same code it is testing.
+`scripts/gen_vectors.py` runs CPython and writes `src/vectors_wbtest.mbt`: test
+blocks of input and expected output, 250 cases each, calling a hand-written
+`check_<subject>` that lives beside the tests for that subject. The blocking is
+not cosmetic — the wasm backend refuses a single function with tens of thousands
+of locals, and one array literal is one function. No Python runs in CI, and no
+test computes an expected value with the same code it is testing.
 
 The vectors cover: each base's integers with prefixes and underscores and their
 rejected forms; float specials and a random sweep of 2,000 bit patterns for

@@ -279,7 +279,7 @@ def main() -> int:
         body.append("")
 
     body.append(TAIL)
-    OUT.write_text("\n".join(body), encoding="utf-8")
+    OUT.write_text("\n".join(body), encoding="utf-8", newline="\n")
 
     undocumented = [
         name for name, _ in entries
