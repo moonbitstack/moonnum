@@ -92,8 +92,21 @@ the digits and the exponent, and normalizes `999…9 → 1000…0` by shifting t
 exponent.
 
 **`round_to_place(num, den, place) -> (String, Int)`.** The same, but to a fixed
-power of ten rather than a fixed count of digits: `q = round(num / (den *
-10^-place))`. This is what `round(x, n)`, `Fraction` formatting and `%` need.
+power of ten rather than a fixed count of digits. This is what `round(x, n)`,
+`Fraction` formatting and `%` need.
+
+In one formula, with `D` the denominator, `N` the numerator and `k` chosen so
+the quotient lands in the right decade:
+
+$$
+q = \left\lfloor \frac{N \cdot 10^{k}}{D} \right\rfloor, \qquad
+r = N \cdot 10^{k} - qD, \qquad
+q' = \begin{cases} q + 1 & 2r > D \\ q + 1 & 2r = D \text{ and } q \text{ odd} \\ q & \text{otherwise} \end{cases}
+$$
+
+The tie rule is the whole point: `2r = D` is the exact half-way case, and it
+goes to the even neighbour, not away from zero. That is what makes
+`round(2.5)` two and `round(-2.5)` minus two.
 
 A `Double` becomes a rational exactly, from its bits:
 
@@ -103,7 +116,15 @@ subnormal: m = frac,          e = -1074
 ```
 
 so `0.1` is `3602879701896397 / 2^55`, and `repr` of it can be `0.1` because the
-shortest string that rounds back is found by *checking*, not by printing.
+shortest string that rounds back is found by *checking*, not by printing. In
+symbols, with `f` the 52 fraction bits and `E` the biased exponent:
+
+$$
+v = m \cdot 2^{e}, \qquad m = 2^{52} + f, \qquad e = E - 1075
+$$
+
+and for a subnormal, where `E = 0`, the leading one is absent: `m = f` and
+`e = -1074`.
 
 ### `dtoa`
 
