@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Integers — moonnum</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="bar">
+  <div class="wrap">
+    <a class="wordmark" href="index.html">moonnum<span class="dot">.</span></a>
+    <nav>
+      <a href="01-integers.html" aria-current="page">Tutorial</a>
+      <a href="api.html">API</a>
+      <a href="algorithms.html">Algorithms</a>
+      <a href="https://github.com/moonbitstack/moonnum">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<article class="lesson">
+  <div class="folio"><span>One</span><span>Integers</span></div>
+  <h1>The integer that never runs out</h1>
+  <p class="lede">
+    MoonBit's <code>BigInt</code> is already arbitrary-precision. What it does
+    not have is the set of operations a numeric programmer reaches for, and the
+    spellings that make them usable. This page is those.
+  </p>
+
+  <h3>Division that agrees with itself</h3>
+  <p>
+    <code>a // b</code> rounds towards negative infinity and <code>a % b</code>
+    takes the sign of <code>b</code>, so the two always satisfy
+    <code>a == (a // b) * b + a % b</code>. Truncating division, the usual
+    default, breaks that identity for negative numbers and quietly returns a
+    remainder with the wrong sign.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>for (a, b) in [(7N, 2N), (-7N, 2N), (7N, -2N), (-7N, -2N)] {
+  let (q, r) = @moonnum.divmod(a, b)
+  println("\{a} / \{b} = \{q} rem \{r}")
+}</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>7 / 2 = 3 rem 1
+-7 / 2 = -4 rem 1
+7 / -2 = -4 rem -1
+-7 / -2 = 3 rem -1</code></pre>
+    </div>
+  </div>
+
+  <h3>Size is the only limit</h3>
+  <p>
+    There is no overflow to guard against, which means the interesting cases are
+    the ones that used to need a library: factorials, binomial coefficients,
+    integer square roots of very large numbers.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>@moonnum.factorial(50N)
+@moonnum.power(2N, 200N)
+@moonnum.comb(@moonnum.parse_int("100"), 50N)
+@moonnum.isqrt(@moonnum.power(10N, 40N))</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>30414093201713378043612608166064768844377641568960512000000000000
+1606938044258990275541962092341162602522202993782792835301376
+100891344545564193334812497256
+100000000000000000000</code></pre>
+    </div>
+  </div>
+
+  <h3>Powers, with and without a modulus</h3>
+  <p>
+    <code>power</code> is the modular form as well as the plain one. With a
+    modulus and a negative exponent it computes the modular inverse, which is
+    what the extended Euclidean algorithm is for; when no inverse exists it
+    refuses instead of returning nonsense.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>@moonnum.power(3N, -1N, modulus=7N)
+@moonnum.power(2N, 1000N, modulus=97N)
+@moonnum.power(2N, -1N, modulus=4N)</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>5
+36
+Refused::Domain: base is not invertible for the given modulus</code></pre>
+    </div>
+  </div>
+
+  <p class="note">
+    <strong>Without a modulus</strong>, a negative exponent has no integer
+    result. <code>power</code> says so; if you want the float answer, ask
+    <code>Number::pow</code>, which follows the tower.
+  </p>
+
+  <h3>Reading what people write</h3>
+  <p>
+    <code>base~ = 0</code> reads the prefix. Underscores are allowed between
+    digits — not next to one — and surrounding whitespace is ignored. Everything
+    else is refused with the offset of the character that spoiled it.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>@moonnum.parse_int("0xff_ec", base=0)
+@moonnum.parse_int(" 1_000 ", base=0)
+@moonnum.parse_int("0b1010", base=2)
+@moonnum.parse_int("12x", base=0)</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>65516
+1000
+10
+Refused::Malformed at offset 2: unexpected trailing character</code></pre>
+    </div>
+  </div>
+
+  <h3>Bytes</h3>
+  <p>
+    Two's complement when you ask for it, big-endian unless you say otherwise,
+    and an overflow when the value does not fit the length you promised.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>@moonnum.to_bytes(-2N, length=4, signed=true)
+@moonnum.of_bytes(bytes, signed=true)
+@moonnum.to_bytes(256N, length=1)</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>b"\xff\xff\xff\xfe"
+-2
+Refused::Overflow: int does not fit in the requested byte length</code></pre>
+    </div>
+  </div>
+
+  <nav class="pager">
+    <a href="index.html">← Home</a>
+    <a class="next" href="02-floats.html">Two: Floats →</a>
+  </nav>
+</article>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>moonnum · Apache-2.0</span>
+    <a href="https://github.com/moonbitstack/moonnum">source</a>
+    <a href="02-floats.html">next</a>
+    <span class="spacer">built for MoonBit</span>
+  </div>
+</footer>
+
+</body>
+</html>

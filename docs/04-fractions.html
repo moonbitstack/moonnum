@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fractions — moonnum</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="bar">
+  <div class="wrap">
+    <a class="wordmark" href="index.html">moonnum<span class="dot">.</span></a>
+    <nav>
+      <a href="01-integers.html" aria-current="page">Tutorial</a>
+      <a href="api.html">API</a>
+      <a href="algorithms.html">Algorithms</a>
+      <a href="https://github.com/moonbitstack/moonnum">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<article class="lesson">
+  <div class="folio"><span>Four</span><span>Fractions</span></div>
+  <h1>When a third has to stay a third</h1>
+  <p class="lede">
+    A fraction is two integers and one invariant: the denominator is positive and
+    the pair has no common factor. Everything else — arithmetic, comparison,
+    rounding, formatting — follows from keeping that invariant on the way in.
+  </p>
+
+  <h3>Exact, all the way down</h3>
+  <p>
+    Addition crosses the denominators and reduces; there is no step where the
+    value is approximated. Sum a third and a sixth and you get a half, not a
+    double that nearly is one.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>let a = @moonnum.parse_fraction("1/3")
+let b = @moonnum.parse_fraction("1/6")
+a + b
+a * @moonnum.parse_fraction("3")
+a + @moonnum.parse_fraction("0.5")</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>1/2
+1
+5/6</code></pre>
+    </div>
+  </div>
+
+  <h3>Two ways in, and they mean different things</h3>
+  <p>
+    <code>parse_fraction("0.1")</code> reads the text as a decimal literal, so it
+    is exactly one tenth. <code>Fraction::of_float(0.1)</code> reads the double,
+    so it is the 3602879701896397/36028797018963968 the hardware holds. Both are
+    correct; they answer different questions.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>@moonnum.parse_fraction("0.1")
+@moonnum.Fraction::of_float(0.1)
+@moonnum.as_ratio(0.1)
+@moonnum.Fraction::of_float(0.1).to_double()</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>1/10
+3602879701896397/36028797018963968
+3602879701896397/36028797018963968
+0.1</code></pre>
+    </div>
+  </div>
+
+  <h3>Rounding returns a fraction, not a float</h3>
+  <p>
+    <code>round</code> with a digit count rounds to a decimal place, half to
+    even, and gives back a fraction — so the result can go on being exact.
+    Without a digit count it gives an integer.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>@moonnum.parse_fraction("7/2").round_big()
+@moonnum.parse_fraction("5/2").round_big()
+@moonnum.parse_fraction("1/3").round(ndigits=3)
+@moonnum.parse_fraction("-7/2").floor_big()
+@moonnum.parse_fraction("-7/2").ceil_big()</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>4
+2
+333/1000
+-4
+-3</code></pre>
+    </div>
+  </div>
+
+  <h3>The best small denominator</h3>
+  <p>
+    <code>limit_denominator</code> finds the closest fraction whose denominator
+    does not exceed a bound, by walking the continued fraction. It is how a
+    measurement becomes a ratio you can write on a drawing.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>let pi = @moonnum.as_ratio(3.141592653589793)
+pi
+pi.limit_denominator(max=10N)
+pi.limit_denominator(max=1000N)</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>884279719003555/281474976710656
+22/7
+355/113</code></pre>
+    </div>
+  </div>
+
+  <h3>Printing a ratio, or printing its value</h3>
+  <p>
+    With no presentation type, a fraction prints as a ratio and the grouping
+    flag applies to both halves. With a float type, it is rounded to the digits
+    you asked for — exactly, from the rational, not through a double.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>let third = @moonnum.parse_fraction("1/3")
+third.format("")
+third.format(".6f")
+third.format(">12.4f")
+third.format(".3%")
+@moonnum.parse_fraction("5/2").format("#")</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>1/3
+0.333333
+      0.3333
+33.333%
+5/2</code></pre>
+    </div>
+  </div>
+
+  <p class="note">
+    <strong>Exactness shows up where floats drift.</strong> At ten digits both
+    agree: <code>3.1428571429</code>. At twenty they do not, and the difference
+    is the whole argument for having a fraction type:
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>@moonnum.format(@moonnum.parse("22/7"), ".20f")
+@moonnum.format_float(22.0 / 7.0, ".20f")</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>3.14285714285714285714
+3.14285714285714279370</code></pre>
+    </div>
+  </div>
+
+  <nav class="pager">
+    <a href="03-complex.html">← Three: Complex</a>
+    <a class="next" href="05-format.html">Five: Formatting →</a>
+  </nav>
+</article>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>moonnum · Apache-2.0</span>
+    <a href="https://github.com/moonbitstack/moonnum">source</a>
+    <a href="05-format.html">next</a>
+    <span class="spacer">built for MoonBit</span>
+  </div>
+</footer>
+
+</body>
+</html>

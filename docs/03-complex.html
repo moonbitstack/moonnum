@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Complex numbers — moonnum</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="bar">
+  <div class="wrap">
+    <a class="wordmark" href="index.html">moonnum<span class="dot">.</span></a>
+    <nav>
+      <a href="01-integers.html" aria-current="page">Tutorial</a>
+      <a href="api.html">API</a>
+      <a href="algorithms.html">Algorithms</a>
+      <a href="https://github.com/moonbitstack/moonnum">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<article class="lesson">
+  <div class="folio"><span>Three</span><span>Complex numbers</span></div>
+  <h1>Two doubles, and all the ways they surprise you</h1>
+  <p class="lede">
+    <code>Complex</code> is a pair of doubles. The arithmetic is the C99
+    behaviour, including the parts nobody writes down: signed zeros, infinities
+    that would otherwise turn into NaN, and a repr that drops the real part when
+    it is a positive zero.
+  </p>
+
+  <h3>Reading</h3>
+  <p>
+    Every form you would write by hand is accepted, plus the <code>i</code>
+    suffix for people coming from mathematics rather than engineering.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>for text in ["1+2j", "(1+2j)", "2j", "j", "-j", "1e3j", "3+5i", "+2j"] {
+  println(@moonnum.parse_complex(text))
+}</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>(1+2j)
+(1+2j)
+2j
+1j
+-1j
+1000j
+(3+5j)
+2j</code></pre>
+    </div>
+  </div>
+
+  <p class="note">
+    <strong>Spaces are not accepted inside</strong>, exactly as in the language
+    this library follows: <code>"1 - 2j"</code> is refused, <code>"1-2j"</code>
+    is not. Accepting both would make it impossible to say what a trailing space
+    means.
+  </p>
+
+  <h3>Arithmetic that keeps its infinities</h3>
+  <p>
+    Multiplying a complex number with an infinite part by another with a zero
+    part yields <code>nan</code> under the naive formula. The implementation
+    follows the recovery step of C11's Annex G, so the answer is the infinity
+    the arithmetic asks for.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>let z = @moonnum.parse_complex("3+4j")
+z + @moonnum.Complex::new(1.0, 0.0)
+z * z
+z.divide(z)
+z.abs()
+z.conjugate()</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>(4+4j)
+(-7+24j)
+(1+0j)
+5
+(3-4j)</code></pre>
+    </div>
+  </div>
+
+  <h3>Integer powers are exact</h3>
+  <p>
+    A small integer exponent is applied by repeated squaring, not by
+    <code>exp(iθ · n)</code>. That is why <code>(1+1j)²</code> is exactly
+    <code>2j</code> and not <code>1.2246e-16+2j</code>. Non-integer exponents go
+    through the polar form, as they must.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>let z = @moonnum.parse_complex("1+1j")
+z.pow(@moonnum.parse_complex("2"))
+z.pow(@moonnum.parse_complex("100"))
+z.pow(@moonnum.parse_complex("0.5"))</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>2j
+(-1125899906842624+0j)
+(1.0986841134678098+0.45508986056222733j)</code></pre>
+    </div>
+  </div>
+
+  <h3>Division by zero says so</h3>
+  <p>
+    <code>Complex::divide</code> is a function and not an operator, because
+    MoonBit's division trait cannot raise. A zero divisor is
+    <code>ZeroDivision</code>, not a NaN that propagates.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>let z = @moonnum.parse_complex("3+4j")
+let zero = @moonnum.parse_complex("0j")
+let answer : String = z.divide(zero).to_string() catch {
+  @moonnum.ZeroDivision => "no answer"
+  _ => "refused"
+}</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>no answer</code></pre>
+    </div>
+  </div>
+
+  <h3>Formatting</h3>
+  <p>
+    One specifier, both halves. The imaginary part always carries a sign; the
+    real part follows your sign flag. Zero padding and <code>=</code> alignment
+    are refused, as they are in the language this follows, because padding
+    inside a pair has no sensible meaning.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>let z = @moonnum.parse_complex("3+4j")
+z.format("")
+z.format(".2f")
+z.format("+9.2f")
+z.format("<14.1e")</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>(3+4j)
+3.00+4.00j
++3.00+4.00j
+3.0e+00+4.0e+00j</code></pre>
+    </div>
+  </div>
+
+  <nav class="pager">
+    <a href="02-floats.html">← Two: Floats</a>
+    <a class="next" href="04-fractions.html">Four: Fractions →</a>
+  </nav>
+</article>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>moonnum · Apache-2.0</span>
+    <a href="https://github.com/moonbitstack/moonnum">source</a>
+    <a href="04-fractions.html">next</a>
+    <span class="spacer">built for MoonBit</span>
+  </div>
+</footer>
+
+</body>
+</html>

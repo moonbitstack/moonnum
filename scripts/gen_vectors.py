@@ -102,20 +102,38 @@ def exact17(value: float) -> str:
     return "%.*e" % (16, value)
 
 
+CHUNK = 250
+
+
+def cell(value) -> str:
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, int):
+        return str(value)
+    return esc(value)
+
+
 def lines(name: str, rows: list[tuple], types: str) -> list[str]:
-    out = [f"let {name} : Array[({types})] = ["]
-    for row in rows:
-        cells = []
-        for cell in row:
-            if isinstance(cell, bool):
-                cells.append("true" if cell else "false")
-            elif isinstance(cell, int):
-                cells.append(str(cell))
-            else:
-                cells.append(esc(cell))
-        out.append("  (" + ", ".join(cells) + "),")
-    out.append("]")
-    out.append("")
+    """Emit `rows` as test blocks that call `check_<name>`.
+
+    The data is spread over many small arrays rather than one large one: the
+    WebAssembly MVP backend refuses a single function with tens of thousands of
+    locals, and one array literal per chunk is one function. The assertion lives
+    in a hand-written `check_<name>` next to the tests for that subject.
+    """
+    checker = "check_" + name.replace("vec_", "")
+    out = []
+    chunks = [rows[index:index + CHUNK] for index in range(0, len(rows), CHUNK)]
+    for index, chunk in enumerate(chunks):
+        out.append("///|")
+        out.append(f'test "{name}: {index + 1} of {len(chunks)}" {{')
+        out.append(f"  let rows : Array[({types})] = [")
+        for row in chunk:
+            out.append("    (" + ", ".join(cell(item) for item in row) + "),")
+        out.append("  ]")
+        out.append(f"  {checker}(rows)")
+        out.append("}")
+        out.append("")
     return out
 
 
@@ -458,6 +476,83 @@ def gen_format_float() -> list[tuple]:
     return rows
 
 
+def gen_format_sweep() -> list[tuple]:
+    """A sampled cross-product of specifiers, on values chosen to be awkward.
+
+    The point is not the size of the sample but that a specifier nobody would
+    write by hand still has to agree: a fill character that is a digit, `=` with
+    a space fill, a precision with an empty type, `#` with `%`.
+    """
+    rng = random.Random(424242)
+    int_values = [0, 1, -1, 7, -7, 255, 1234567, -1234567, 2**64 + 1,
+                  10**30, -10**30]
+    float_values = [0.0, -0.0, 1.0, -1.0, 0.5, 1234.5678, -1234.5678,
+                    1e16, -1e16, 1e-5, 0.0001, 3.141592653589793, 1e300,
+                    5e-324, float("inf"), float("-inf"), float("nan"), 2.675]
+    specs = []
+    for fill in ("", "*", "0", "-", "\u00a0"):
+        for align in ("", "<", ">", "^", "="):
+            for sign in ("", "+", "-", " "):
+                for alt in ("", "#"):
+                    for zero in ("", "0"):
+                        for width in ("", "3", "9", "12"):
+                            for group in ("", ",", "_"):
+                                for precision in ("", ".0", ".2", ".7"):
+                                    for ty in ("", "d", "b", "o", "x", "X", "n",
+                                               "e", "E", "f", "F", "g", "G", "%"):
+                                        specs.append(
+                                            fill + align + sign + alt + zero +
+                                            width + group + precision + ty)
+    rng.shuffle(specs)
+    int_rows = []
+    float_rows = []
+    for spec in specs[:1200]:
+        for value in int_values:
+            try:
+                int_rows.append((str(value), spec, format(value, spec)))
+            except ValueError:
+                int_rows.append((str(value), spec, MALFORMED))
+            except OverflowError:
+                int_rows.append((str(value), spec, "!overflow"))
+        for value in float_values:
+            try:
+                float_rows.append((exact17(value), spec, format(value, spec)))
+            except ValueError:
+                float_rows.append((exact17(value), spec, MALFORMED))
+            except OverflowError:
+                float_rows.append((exact17(value), spec, "!overflow"))
+    return int_rows, float_rows
+
+
+def gen_format_fraction_sweep() -> list[tuple]:
+    """The same idea for fractions, where `f`-style formatting is exact."""
+    rng = random.Random(1717)
+    values = [Fraction(1, 3), Fraction(1234, 7), Fraction(-22, 7), Fraction(5, 2),
+              Fraction(1, 8), Fraction(0), Fraction(-1, 2), Fraction(10**20, 7)]
+    specs = []
+    for fill in ("", "*", "0", " "):
+        for align in ("", "<", ">", "^", "="):
+            for sign in ("", "+", "-", " "):
+                for alt in ("", "#"):
+                    for width in ("", "6", "14"):
+                        for group in ("", ",", "_"):
+                            for precision in ("", ".0", ".3", ".10"):
+                                for ty in ("", "e", "E", "f", "F", "g", "G", "%", "d"):
+                                    specs.append(fill + align + sign + alt + width +
+                                                 group + precision + ty)
+    rng.shuffle(specs)
+    rows = []
+    for spec in specs[:220]:
+        for value in values:
+            try:
+                rows.append((str(value.numerator), str(value.denominator), spec,
+                             format(value, spec)))
+            except ValueError:
+                rows.append((str(value.numerator), str(value.denominator), spec,
+                             MALFORMED))
+    return rows
+
+
 def gen_format_complex() -> list[tuple]:
     rows = []
     values = [(1.0, 2.0), (0.0, 2.0), (-0.0, -1.0), (1.5, -2.5),
@@ -572,25 +667,30 @@ def main() -> None:
         "// Every row is an input and what Python answers for it.",
         "",
     ]
-    out += lines("vec_parse_int", gen_parse_int(), "String, Int, String")
+    out += lines("vec_parse_int", gen_parse_int(), "String, Int32, String")
     out += lines("vec_int_div", gen_int_div(), "String, String, String, String")
     out += lines("vec_pow", gen_pow(), "String, String, String, String")
     out += lines("vec_int_math", gen_int_math(), "String, String, String, String")
-    out += lines("vec_bytes", gen_bytes(), "String, Int, Bool, Bool, String")
+    out += lines("vec_bytes", gen_bytes(), "String, Int32, Bool, Bool, String")
     out += lines("vec_parse_float", gen_parse_float(), "String, String")
     out += lines("vec_repr", gen_repr(), "String, String")
     hex_out, hex_in = gen_hex()
     out += lines("vec_hex_out", hex_out, "String, String")
     out += lines("vec_hex_in", hex_in, "String, String")
-    out += lines("vec_round", gen_round(), "String, String, Int, String")
+    out += lines("vec_round", gen_round(), "String, String, Int32, String")
     out += lines("vec_floor", gen_floor(), "String, String, String, String")
     out += lines("vec_complex_parse", gen_complex_parse(), "String, String")
     out += lines("vec_complex_ops", gen_complex_ops(), "String, String, String, String")
     out += lines("vec_fraction_parse", gen_fraction_parse(), "String, String")
     out += lines("vec_fraction_ops", gen_fraction_ops(), "String, String, String, String")
+    sweep_int, sweep_float = gen_format_sweep()
+    out += lines("vec_format_sweep_int", sweep_int, "String, String, String")
+    out += lines("vec_format_sweep_float", sweep_float, "String, String, String")
     out += lines("vec_format_int", gen_format_int(), "String, String, String")
     out += lines("vec_format_float", gen_format_float(), "String, String, String")
     out += lines("vec_format_complex", gen_format_complex(), "String, String, String, String")
+    out += lines("vec_format_fraction_sweep", gen_format_fraction_sweep(),
+                 "String, String, String, String")
     out += lines("vec_format_fraction", gen_format_fraction(), "String, String, String, String")
     out += lines("vec_number_parse", gen_number_parse(), "String, String")
     out += lines("vec_numbers", gen_numbers(), "String, String, String, String")

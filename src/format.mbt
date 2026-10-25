@@ -245,7 +245,8 @@ fn layout_number(
       content +
       repeat_char(spec.fill, padding - left)
     }
-    '=' => sign_text + repeat_char(spec.fill, padding) + content
+    // `=` pads inside the sign and the base prefix, not before them.
+    '=' => sign_text + prefix + repeat_char(spec.fill, padding) + grouped + tail
     _ => repeat_char(spec.fill, padding) + sign_text + content
   }
 }
@@ -362,6 +363,9 @@ pub fn format_int(
       if spec.group == ',' && (ty == 'b' || ty == 'o' || ty == 'x' || ty == 'X') {
         malformed(spec.ty_at, "cannot specify ',' with this presentation type")
       }
+      if spec.group != '\u{0}' && ty == 'n' {
+        malformed(spec.ty_at, "cannot specify a grouping separator with 'n'")
+      }
       if spec.neg0 {
         malformed(
           spec.ty_at,
@@ -451,8 +455,12 @@ fn float_component(
         code = 'r'
         add_dot0 = true
       } else {
+        // A precision without a type keeps the "at least one digit after the
+        // point" rule, and reads as `g` for everything else. `g` with a
+        // precision of zero means one significant digit.
         code = 'g'
-        digits = given
+        digits = if given < 1 { 1 } else { given }
+        add_dot0 = true
       }
     'e' => {
       code = 'e'
@@ -512,6 +520,9 @@ fn format_float_with(
   let ty = spec.ty
   if ty == 'b' || ty == 'c' || ty == 'd' || ty == 'o' || ty == 'x' || ty == 'X' {
     malformed(spec.ty_at, "unknown format code for a float")
+  }
+  if ty == 'n' && spec.group != '\u{0}' {
+    malformed(spec.ty_at, "cannot specify a grouping separator with 'n'")
   }
   let text = float_component(
     d,

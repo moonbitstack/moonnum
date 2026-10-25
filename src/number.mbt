@@ -1,7 +1,7 @@
 // The numeric tower: one value that can be any of the four kinds.
 
 ///|
-/// A number of any kind, as Python's `numbers` tower arranges them.
+/// A number of any kind, as the tower arranges them.
 ///
 /// Promotion goes `Int` → `Fraction` → `Float` → `Complex`. Comparison is
 /// exact across the tower: an integer is never rounded to a float to be
@@ -463,7 +463,7 @@ pub fn Number::to_double(self : Number) -> Double raise Refused {
 }
 
 ///|
-impl Show for Number with fn to_string(self) {
+pub impl Show for Number with fn to_string(self) {
   match self {
     Int(v) => v.to_string()
     Float(f) => repr_float(f)
@@ -473,7 +473,7 @@ impl Show for Number with fn to_string(self) {
 }
 
 ///|
-impl Eq for Number with fn equal(self, other) {
+pub impl Eq for Number with fn equal(self, other) {
   self.equal_numeric(other)
 }
 
@@ -500,7 +500,7 @@ pub fn Number::neg(self : Number) -> Number {
 ///|
 /// Addition stays inside the higher of the two kinds, which is what Python's
 /// tower does: an integer plus a fraction is a fraction, never a float.
-impl Add for Number with fn add(self, other) {
+pub impl Add for Number with fn add(self, other) {
   let level = if rank(self) > rank(other) { rank(self) } else { rank(other) }
   match level {
     0 =>
@@ -521,7 +521,7 @@ impl Add for Number with fn add(self, other) {
 ///|
 /// Subtraction, spelled out instead of adding a negation: `-0.0 - 0` is
 /// `-0.0` and `-0.0 + 0.0` is not.
-impl Sub for Number with fn sub(self, other) {
+pub impl Sub for Number with fn sub(self, other) {
   let level = if rank(self) > rank(other) { rank(self) } else { rank(other) }
   match level {
     0 =>
@@ -540,7 +540,7 @@ impl Sub for Number with fn sub(self, other) {
 }
 
 ///|
-impl Mul for Number with fn mul(self, other) {
+pub impl Mul for Number with fn mul(self, other) {
   let level = if rank(self) > rank(other) { rank(self) } else { rank(other) }
   match level {
     0 =>
@@ -559,7 +559,7 @@ impl Mul for Number with fn mul(self, other) {
 }
 
 ///|
-impl Neg for Number with fn neg(self) {
+pub impl Neg for Number with fn neg(self) {
   match self {
     Int(v) => Number::Int(-v)
     Float(f) => Number::Float(-f)
@@ -569,7 +569,7 @@ impl Neg for Number with fn neg(self) {
 }
 
 ///|
-pub extend Number with Show::{to_string}
+pub extend Number with Show::{to_string, output}
 
 ///|
 pub extend Number with Eq::{equal, not_equal}

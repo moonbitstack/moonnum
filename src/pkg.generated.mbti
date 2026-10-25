@@ -79,7 +79,9 @@ pub(all) suberror Refused {
   Overflow(reason~ : String)
   Domain(reason~ : String)
 }
+pub fn Refused::output(Self, &Logger) -> Unit
 pub fn Refused::to_string(Self) -> String
+pub impl Show for Refused
 
 // Types and methods
 pub(all) struct Complex {
@@ -98,9 +100,17 @@ pub fn Complex::mul(Self, Self) -> Self
 pub fn Complex::neg(Self) -> Self
 pub fn Complex::new(Double, Double) -> Self
 pub fn Complex::not_equal(Self, Self) -> Bool
+pub fn Complex::output(Self, &Logger) -> Unit
 pub fn Complex::pow(Self, Self) -> Self raise Refused
 pub fn Complex::sub(Self, Self) -> Self
 pub fn Complex::to_string(Self) -> String
+pub impl Add for Complex
+pub impl Default for Complex
+pub impl Eq for Complex
+pub impl Mul for Complex
+pub impl Neg for Complex
+pub impl Show for Complex
+pub impl Sub for Complex
 
 pub(all) struct Fraction {
   num : @bigint.BigInt
@@ -127,12 +137,25 @@ pub fn Fraction::not_equal(Self, Self) -> Bool
 pub fn Fraction::numerator(Self) -> @bigint.BigInt
 pub fn Fraction::of_float(Double) -> Self raise Refused
 pub fn Fraction::of_int(@bigint.BigInt) -> Self
+pub fn Fraction::op_ge(Self, Self) -> Bool
+pub fn Fraction::op_gt(Self, Self) -> Bool
+pub fn Fraction::op_le(Self, Self) -> Bool
+pub fn Fraction::op_lt(Self, Self) -> Bool
+pub fn Fraction::output(Self, &Logger) -> Unit
 pub fn Fraction::reciprocal(Self) -> Self raise Refused
 pub fn Fraction::round(Self, ndigits~ : Int32) -> Self
 pub fn Fraction::round_big(Self) -> @bigint.BigInt
 pub fn Fraction::sub(Self, Self) -> Self
 pub fn Fraction::to_double(Self) -> Double raise Refused
 pub fn Fraction::to_string(Self) -> String
+pub impl Add for Fraction
+pub impl Compare for Fraction
+pub impl Default for Fraction
+pub impl Eq for Fraction
+pub impl Mul for Fraction
+pub impl Neg for Fraction
+pub impl Show for Fraction
+pub impl Sub for Fraction
 
 pub(all) enum Number {
   Int(@bigint.BigInt)
@@ -150,10 +173,17 @@ pub fn Number::floordiv(Self, Self) -> Self raise Refused
 pub fn Number::mul(Self, Self) -> Self
 pub fn Number::neg(Self) -> Self
 pub fn Number::not_equal(Self, Self) -> Bool
+pub fn Number::output(Self, &Logger) -> Unit
 pub fn Number::pow(Self, Self) -> Self raise Refused
 pub fn Number::sub(Self, Self) -> Self
 pub fn Number::to_double(Self) -> Double raise Refused
 pub fn Number::to_string(Self) -> String
+pub impl Add for Number
+pub impl Eq for Number
+pub impl Mul for Number
+pub impl Neg for Number
+pub impl Show for Number
+pub impl Sub for Number
 
 // Type aliases
 

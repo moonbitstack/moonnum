@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Formatting — moonnum</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="bar">
+  <div class="wrap">
+    <a class="wordmark" href="index.html">moonnum<span class="dot">.</span></a>
+    <nav>
+      <a href="01-integers.html" aria-current="page">Tutorial</a>
+      <a href="api.html">API</a>
+      <a href="algorithms.html">Algorithms</a>
+      <a href="https://github.com/moonbitstack/moonnum">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<article class="lesson">
+  <div class="folio"><span>Five</span><span>Formatting</span></div>
+  <h1>One specifier for four kinds</h1>
+  <p class="lede">
+    The specifier is parsed once, left to right, in a fixed order. Learning the
+    order is learning the whole language; everything else is which type does
+    what with the precision.
+  </p>
+
+<pre><code>[[fill]align][sign][z][#][0][width][grouping][.precision][type]</code></pre>
+
+  <table>
+    <tr><th>Part</th><th>Values</th><th>Meaning</th></tr>
+    <tr><td><code>fill</code>, <code>align</code></td><td><code>*&gt;</code>, <code>&lt;</code>, <code>&gt;</code>, <code>^</code>, <code>=</code></td><td>padding character, and where the padding goes; <code>=</code> puts it after the sign</td></tr>
+    <tr><td><code>sign</code></td><td><code>+</code>, <code>-</code>, space</td><td>what to print before a non-negative number</td></tr>
+    <tr><td><code>z</code></td><td>flag</td><td>a zero result is never negative</td></tr>
+    <tr><td><code>#</code></td><td>flag</td><td>alternate form: prefixes for integers, kept zeros for floats</td></tr>
+    <tr><td><code>0</code></td><td>flag</td><td>zero padding, which participates in grouping</td></tr>
+    <tr><td><code>width</code></td><td>digits</td><td>minimum columns</td></tr>
+    <tr><td><code>grouping</code></td><td><code>,</code>, <code>_</code></td><td>thousands separators; <code>_</code> groups binary, octal and hex by four</td></tr>
+    <tr><td><code>.precision</code></td><td>digits</td><td>digits after the point for <code>f</code>, significant digits for <code>g</code></td></tr>
+    <tr><td><code>type</code></td><td><code>b c d e E f F g G n o x X %</code></td><td>presentation; none means "like a repr, with at least one decimal"</td></tr>
+  </table>
+
+  <h3>Width, fill, alignment</h3>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>@moonnum.format_int(1234567N, "15d")
+@moonnum.format_int(1234567N, "&lt;15d")
+@moonnum.format_int(1234567N, "^15d")
+@moonnum.format_int(1234567N, "*^15d")
+@moonnum.format_int(1234567N, "0&gt;15d")</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>|      1234567|
+|1234567       |
+|    1234567    |
+|****1234567****|
+|000000001234567|</code></pre>
+    </div>
+  </div>
+
+  <h3>Sign and zero padding</h3>
+  <p>
+    Zero padding goes <em>inside</em> the sign and, for other bases, inside the
+    prefix: <code>-00001234567</code>, <code>0x000_00ff</code>. Padding outside
+    the sign is the classic bug that makes a column of numbers impossible to
+    align.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>@moonnum.format_int(1234567N, "+15d")
+@moonnum.format_int(-1234567N, "+15d")
+@moonnum.format_int(1234567N, "015d")
+@moonnum.format_int(-1234567N, "015d")
+@moonnum.format_int(255N, "#010_x")</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>       +1234567
+       -1234567
+000000001234567
+-00000001234567
+0x000_00ff</code></pre>
+    </div>
+  </div>
+
+  <h3>Grouping that reaches into the zeros</h3>
+  <p>
+    With zero padding, the separators have to be inserted among the padding
+    zeros too — otherwise the column stops lining up at exactly the values that
+    need it most.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>@moonnum.format_int(1234567N, ",d")
+@moonnum.format_int(1234567N, "015,d")
+@moonnum.format_int(255N, "_b")
+@moonnum.format_float(1234.5678, ",.2f")</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>1,234,567
+000,001,234,567
+1111_1111
+1,234.57</code></pre>
+    </div>
+  </div>
+
+  <h3>Precision means different things</h3>
+  <p>
+    <code>f</code> counts digits after the point, <code>e</code> counts digits
+    after the point and always writes an exponent, <code>g</code> counts
+    significant digits and drops trailing zeros. No type at all is
+    <code>g</code> with a guaranteed decimal: <code>format(1.0, "")</code> is
+    <code>1.0</code>, not <code>1</code>.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>@moonnum.format_float(1234.5678, "f")
+@moonnum.format_float(1234.5678, ".2f")
+@moonnum.format_float(1234.5678, ".3e")
+@moonnum.format_float(1234.5678, ".3g")
+@moonnum.format_float(1234.5678, "")</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>1234.567800
+1234.57
+1.235e+03
+1.23e+03
+1234.5678</code></pre>
+    </div>
+  </div>
+
+  <h3>Three flags that are easy to get wrong</h3>
+  <p>
+    <code>#</code> keeps the zeros <code>g</code> would drop;
+    <code>z</code> coerces a negative zero after rounding, before the sign is
+    chosen; <code>%</code> multiplies by a hundred, formats as <code>f</code>,
+    and appends a percent sign.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>@moonnum.format_float(2.0, "g")
+@moonnum.format_float(2.0, "#g")
+@moonnum.format_float(-0.0, "")
+@moonnum.format_float(-0.0, "z")
+@moonnum.format_float(-0.0001, "z.2f")
+@moonnum.format_float(0.25, ".2%")</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>2
+2.00000
+-0.0
+0.0
+0.00
+25.00%</code></pre>
+    </div>
+  </div>
+
+  <h3>One entry point</h3>
+  <p>
+    <code>format</code> takes a <code>Number</code> and dispatches to the right
+    kind, so a table of mixed values can be printed with one specifier. A float
+    type on an integer converts it; a fraction formats exactly; a complex number
+    applies the specifier to both halves.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>for text in ["42", "-0.5", "22/7", "3+4j"] {
+  println(@moonnum.format(@moonnum.parse(text), ".3f"))
+}</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>42.000
+-0.500
+3.143
+3.000+4.000j</code></pre>
+    </div>
+  </div>
+
+  <h3>Refusals</h3>
+  <p>
+    A specifier that cannot mean anything is refused rather than approximated:
+    precision on an integer, <code>,</code> on a hexadecimal number,
+    <code>z</code> on an integer, zero padding on a complex number, two grouping
+    characters at once. The offset is the position in the specifier that cannot
+    be read, which is where the caret should point.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>@moonnum.format_int(255N, ".2d")
+@moonnum.format_int(255N, ",x")
+@moonnum.format_int(255N, "z")
+@moonnum.format_float(1.5, "d")</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>precision is not allowed for integers at offset 2
+cannot specify ',' with this presentation type at offset 1
+negative-zero coercion is not allowed for integers at offset 0
+unknown format code for a float at offset 0</code></pre>
+    </div>
+  </div>
+
+  <nav class="pager">
+    <a href="04-fractions.html">← Four: Fractions</a>
+    <a class="next" href="api.html">API reference →</a>
+  </nav>
+</article>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>moonnum · Apache-2.0</span>
+    <a href="https://github.com/moonbitstack/moonnum">source</a>
+    <a href="api.html">next</a>
+    <span class="spacer">built for MoonBit</span>
+  </div>
+</footer>
+
+</body>
+</html>

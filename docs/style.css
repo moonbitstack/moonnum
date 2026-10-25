@@ -1,0 +1,571 @@
+/* moonnum — a printed specimen sheet, not a landing page.
+ *
+ * Ink on paper, hairlines, tabular figures. The accent is used where a value
+ * changes, and nowhere else.
+ */
+
+@font-face {
+  font-family: "moonnum-serif";
+  src: local("Iowan Old Style"), local("Palatino Linotype"), local("Palatino"),
+    local("Book Antiqua"), local("Georgia");
+}
+
+:root {
+  --paper: #f7f2e8;
+  --paper-raised: #fdfaf3;
+  --ink: #1a1815;
+  --ink-soft: #57514a;
+  --ink-faint: #8b8378;
+  --rule: #d6cdbc;
+  --rule-strong: #b9ae9a;
+  --accent: #a8321f;
+  --accent-soft: #e8d9cf;
+  --second: #1d4c46;
+  --code-bg: #f1ebdd;
+  --serif: "moonnum-serif", "Iowan Old Style", Palatino, Georgia, serif;
+  --mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+  --measure: 68ch;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #171614;
+    --paper-raised: #1e1c19;
+    --ink: #ece7dd;
+    --ink-soft: #a9a296;
+    --ink-faint: #7b7469;
+    --rule: #34302a;
+    --rule-strong: #4a443c;
+    --accent: #e4664a;
+    --accent-soft: #38241f;
+    --second: #7fb3a9;
+    --code-bg: #201e1a;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.62;
+  font-variant-numeric: tabular-nums;
+  text-rendering: optimizeLegibility;
+}
+
+/* A faint ruled edge down the left, like the margin of a printed sheet. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 6px;
+  background: linear-gradient(var(--accent), var(--second));
+  opacity: 0.85;
+}
+
+a {
+  color: var(--ink);
+  text-decoration-color: var(--accent);
+  text-underline-offset: 0.18em;
+  text-decoration-thickness: 1px;
+}
+
+a:hover {
+  color: var(--accent);
+}
+
+.wrap {
+  width: min(1040px, calc(100% - 3rem));
+  margin: 0 auto;
+}
+
+/* ── top bar ─────────────────────────────────────────────────────────── */
+
+header.bar {
+  border-bottom: 1px solid var(--rule);
+  padding: 1.1rem 0 0.9rem;
+  margin-bottom: 0;
+}
+
+header.bar .wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 1.6rem;
+  flex-wrap: wrap;
+}
+
+.wordmark {
+  font-size: 1.16rem;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.wordmark .dot {
+  color: var(--accent);
+}
+
+header.bar nav {
+  margin-left: auto;
+  display: flex;
+  gap: 1.15rem;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+header.bar nav a {
+  text-decoration: none;
+  color: var(--ink-soft);
+}
+
+header.bar nav a[aria-current="page"] {
+  color: var(--accent);
+}
+
+header.bar nav a:hover {
+  color: var(--ink);
+}
+
+/* ── the hero ────────────────────────────────────────────────────────── */
+
+.hero {
+  padding: 3.6rem 0 2.4rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.hero .eyebrow {
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 1.1rem;
+}
+
+.hero h1 {
+  font-size: clamp(2.5rem, 6vw, 4.1rem);
+  line-height: 1.02;
+  letter-spacing: -0.022em;
+  font-weight: 400;
+  margin: 0 0 1.1rem;
+  max-width: 20ch;
+}
+
+.hero h1 em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.hero p.lede {
+  font-size: 1.16rem;
+  max-width: 44ch;
+  color: var(--ink-soft);
+  margin: 0 0 1.6rem;
+}
+
+/* The specimen line: the same value in four notations. */
+.specimen {
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--accent);
+  background: var(--paper-raised);
+  padding: 1.2rem 1.4rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem 1.6rem;
+  font-family: var(--mono);
+  font-size: 0.86rem;
+}
+
+.specimen div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+}
+
+.specimen .k {
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.specimen .v {
+  font-size: 0.95rem;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.specimen .v.bad {
+  color: var(--accent);
+}
+
+/* ── sections ────────────────────────────────────────────────────────── */
+
+section {
+  padding: 2.8rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+section:last-of-type {
+  border-bottom: none;
+}
+
+section > h2 {
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  font-weight: 400;
+  margin: 0 0 1.5rem;
+}
+
+h3 {
+  font-size: 1.32rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 2rem 0 0.6rem;
+}
+
+p,
+li {
+  max-width: var(--measure);
+}
+
+/* ── the ledger of kinds ─────────────────────────────────────────────── */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  margin: 0.4rem 0 1rem;
+}
+
+th {
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  font-weight: 400;
+  padding: 0 0.8rem 0.5rem 0;
+  border-bottom: 1px solid var(--rule-strong);
+}
+
+td {
+  padding: 0.62rem 0.8rem 0.62rem 0;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+}
+
+td:first-child {
+  white-space: nowrap;
+}
+
+tr:hover td {
+  background: var(--paper-raised);
+}
+
+code,
+.mono {
+  font-family: var(--mono);
+  font-size: 0.86em;
+}
+
+p code,
+li code,
+td code,
+h3 code {
+  background: var(--code-bg);
+  padding: 0.08em 0.34em;
+  border-radius: 2px;
+}
+
+/* ── code blocks ─────────────────────────────────────────────────────── */
+
+pre {
+  font-family: var(--mono);
+  font-size: 0.83rem;
+  line-height: 1.62;
+  background: var(--code-bg);
+  border-left: 2px solid var(--rule-strong);
+  padding: 0.95rem 1.1rem;
+  overflow-x: auto;
+  margin: 1rem 0 1.3rem;
+}
+
+pre code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* The pairing: what you write, and what comes out. */
+.pair {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 0;
+  border: 1px solid var(--rule);
+  margin: 1.1rem 0 1.5rem;
+  background: var(--paper-raised);
+}
+
+.pair pre {
+  margin: 0;
+  border: none;
+  background: none;
+}
+
+.pair pre + pre {
+  border-left: 1px solid var(--rule);
+  color: var(--ink-soft);
+}
+
+.pair .label {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding: 0.6rem 1.1rem 0;
+}
+
+@media (max-width: 720px) {
+  .pair {
+    grid-template-columns: 1fr;
+  }
+  .pair pre + pre {
+    border-left: none;
+    border-top: 1px solid var(--rule);
+  }
+}
+
+/* ── tutorial furniture ──────────────────────────────────────────────── */
+
+.lesson {
+  padding: 2.6rem 0 3rem;
+}
+
+.lesson .folio {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.7rem;
+  margin-bottom: 1.6rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.lesson h1 {
+  font-size: clamp(1.9rem, 4vw, 2.8rem);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin: 0 0 0.9rem;
+  max-width: 24ch;
+}
+
+.lesson .lede {
+  font-size: 1.08rem;
+  color: var(--ink-soft);
+  max-width: 52ch;
+  margin-bottom: 1.6rem;
+}
+
+.note {
+  border-left: 2px solid var(--second);
+  padding: 0.1rem 0 0.1rem 1rem;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+  margin: 1.2rem 0;
+}
+
+.note strong {
+  color: var(--second);
+  font-weight: 600;
+}
+
+.pager {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  border-top: 1px solid var(--rule);
+  padding: 1.4rem 0 3rem;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+}
+
+.pager a {
+  text-decoration: none;
+}
+
+.pager .next {
+  margin-left: auto;
+  text-align: right;
+}
+
+/* ── api reference ───────────────────────────────────────────────────── */
+
+.api-group {
+  padding-top: 2.2rem;
+}
+
+.api-group > h2 {
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 1.5rem;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.item {
+  padding: 0.95rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.item:last-child {
+  border-bottom: none;
+}
+
+.item .sig {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0 0 0.4rem;
+  padding-left: 1.6em;
+  text-indent: -1.6em;
+}
+
+.item .sig .name {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.item .doc {
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  max-width: 78ch;
+  margin: 0;
+}
+
+.item .doc p {
+  margin: 0 0 0.55rem;
+}
+
+.item .doc p:last-child {
+  margin-bottom: 0;
+}
+
+.item .doc code {
+  background: var(--code-bg);
+  padding: 0.06em 0.3em;
+}
+
+.item .doc pre {
+  font-size: 0.78rem;
+  margin: 0.6rem 0 0.2rem;
+}
+
+.jump {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.1rem;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  margin: 1rem 0 0;
+}
+
+.jump a {
+  text-decoration: none;
+  color: var(--ink-soft);
+}
+
+.jump a:hover {
+  color: var(--accent);
+}
+
+/* ── diagrams ────────────────────────────────────────────────────────── */
+
+figure {
+  margin: 1.6rem 0 1.8rem;
+}
+
+figure svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+figcaption {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+  margin-top: 0.6rem;
+}
+
+/* ── footer ──────────────────────────────────────────────────────────── */
+
+footer {
+  border-top: 1px solid var(--rule);
+  padding: 2rem 0 3.2rem;
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  color: var(--ink-faint);
+}
+
+footer .wrap {
+  display: flex;
+  gap: 1.4rem;
+  flex-wrap: wrap;
+  align-items: baseline;
+}
+
+footer a {
+  color: var(--ink-soft);
+  text-decoration: none;
+}
+
+footer a:hover {
+  color: var(--accent);
+}
+
+footer .spacer {
+  margin-left: auto;
+}
+
+@media (max-width: 640px) {
+  .specimen {
+    grid-template-columns: 1fr;
+  }
+  body {
+    font-size: 17px;
+  }
+  .hero {
+    padding-top: 2.4rem;
+  }
+  header.bar nav {
+    gap: 0.8rem;
+  }
+}

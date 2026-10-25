@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Floats — moonnum</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="bar">
+  <div class="wrap">
+    <a class="wordmark" href="index.html">moonnum<span class="dot">.</span></a>
+    <nav>
+      <a href="01-integers.html" aria-current="page">Tutorial</a>
+      <a href="api.html">API</a>
+      <a href="algorithms.html">Algorithms</a>
+      <a href="https://github.com/moonbitstack/moonnum">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<article class="lesson">
+  <div class="folio"><span>Two</span><span>Floats</span></div>
+  <h1>Text that tells the truth about a double</h1>
+  <p class="lede">
+    A <code>Double</code> is an exact binary value. Printing it is a translation,
+    and every translation makes a choice: how many digits, where the point goes,
+    when to give up and use an exponent. This page is the choice, made once and
+    made consistently.
+  </p>
+
+  <h3>The shortest string that reads back</h3>
+  <p>
+    <code>repr_float</code> prints the fewest digits that parse back to the same
+    bit pattern, then decides between fixed and scientific notation on where the
+    point landed — never on how large the number feels. That is why
+    <code>1e15</code> is written out in full while <code>1e16</code> is not.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>for v in [42.0, 0.1, 1.0 / 3.0, 1.0e15, 1.0e16, 1.0e-4, 1.0e-5, -0.0] {
+  println(@moonnum.repr_float(v))
+}</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>42.0
+0.1
+0.3333333333333333
+1000000000000000.0
+1e+16
+0.0001
+1e-05
+-0.0</code></pre>
+    </div>
+  </div>
+
+  <p class="note">
+    <strong>Why not always 17 digits?</strong> Because a double does not have 17
+    digits of meaning; it has 53 bits. Seventeen digits is what it takes to
+    round-trip the worst case, and printing them for <code>0.1</code> would
+    claim a precision the value does not have.
+  </p>
+
+  <h3>The exact value, on demand</h3>
+  <p>
+    When the shortest form is not the honest form, ask for the exact one. A
+    double is a rational whose denominator is a power of two, so it can be
+    written exactly — which is the entire explanation of
+    <code>0.1 + 0.2</code>.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>@moonnum.float_hex(0.1)
+@moonnum.as_ratio(0.1)
+@moonnum.repr_float(0.1 + 0.2)
+@moonnum.float_of_hex("0x1.999999999999ap-4")</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>0x1.999999999999ap-4
+3602879701896397/36028797018963968
+0.30000000000000004
+0.1</code></pre>
+    </div>
+  </div>
+
+  <h3>Rounding is a real decision</h3>
+  <p>
+    <code>round_float</code> rounds the exact binary value to a decimal place,
+    half to even. Rounding the <em>printed</em> digits instead — the shortcut
+    every naive implementation takes — turns <code>2.675</code> into
+    <code>2.68</code>, because the double is slightly below the halfway point.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>@moonnum.repr_float(@moonnum.round_float(2.675, ndigits=2))
+@moonnum.round_big(0.5)
+@moonnum.round_big(1.5)
+@moonnum.round_big(2.5)
+@moonnum.round_big(-2.5)</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>2.67
+0
+2
+2
+-2</code></pre>
+    </div>
+  </div>
+
+  <p>
+    Floor, ceiling and truncation return integers rather than doubles, so there
+    is no silent precision loss when the value is outside the range an
+    <code>Int</code> can hold.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>@moonnum.floor_big(-1.2)
+@moonnum.ceil_big(-1.2)
+@moonnum.trunc_big(-1.2)
+@moonnum.floor_big(1.0e300)</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>-2
+-1
+-1
+999999999999999949387135297074018866963645011013410073083904</code></pre>
+    </div>
+  </div>
+
+  <h3>Infinities and NaNs are values too</h3>
+  <p>
+    They have spellings, they survive a round trip, and they behave: a NaN is
+    not equal to itself, and ordering against one is refused rather than
+    answered with a number that means nothing.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>@moonnum.parse_float("infinity")
+@moonnum.parse_float("-inf")
+@moonnum.parse_float("NaN")
+@moonnum.parse_float("nan") == @moonnum.parse_float("nan")</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>inf
+-inf
+nan
+false</code></pre>
+    </div>
+  </div>
+
+  <nav class="pager">
+    <a href="01-integers.html">← One: Integers</a>
+    <a class="next" href="03-complex.html">Three: Complex →</a>
+  </nav>
+</article>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>moonnum · Apache-2.0</span>
+    <a href="https://github.com/moonbitstack/moonnum">source</a>
+    <a href="03-complex.html">next</a>
+    <span class="spacer">built for MoonBit</span>
+  </div>
+</footer>
+
+</body>
+</html>

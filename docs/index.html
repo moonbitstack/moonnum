@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>moonnum — numbers for MoonBit</title>
+<meta name="description" content="Arbitrary-precision integers, floats with honest text, complex numbers and exact fractions for MoonBit, with one error type and one formatting language.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="bar">
+  <div class="wrap">
+    <a class="wordmark" href="index.html">moonnum<span class="dot">.</span></a>
+    <nav>
+      <a href="01-integers.html">Tutorial</a>
+      <a href="api.html">API</a>
+      <a href="algorithms.html">Algorithms</a>
+      <a href="https://github.com/moonbitstack/moonnum">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <div class="hero">
+    <div class="wrap">
+      <p class="eyebrow">A number library for MoonBit</p>
+      <h1>Numbers that say <em>what they are</em>.</h1>
+      <p class="lede">
+        Arbitrary-precision integers, IEEE-754 floats printed honestly, complex
+        numbers written <code>3+4j</code>, and exact fractions. One package, one
+        error type, one formatting language.
+      </p>
+
+      <div class="specimen">
+        <div>
+          <span class="k">as a float</span>
+          <span class="v">0.1</span>
+        </div>
+        <div>
+          <span class="k">as a fraction</span>
+          <span class="v">1/10</span>
+        </div>
+        <div>
+          <span class="k">what the double holds</span>
+          <span class="v">3602879701896397/36028797018963968</span>
+        </div>
+        <div>
+          <span class="k">and 0.1 + 0.2</span>
+          <span class="v bad">0.30000000000000004</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="wrap">
+      <h2>Four kinds, one tower</h2>
+      <table>
+        <tr>
+          <th>Kind</th><th>Type</th><th>What it is</th>
+        </tr>
+        <tr>
+          <td><a href="01-integers.html">Integer</a></td>
+          <td><code>@bigint.BigInt</code></td>
+          <td>Core's arbitrary-precision integer, with what it is missing: floor
+          division, a modulo that takes the divisor's sign, modular powers,
+          <code>isqrt</code>, <code>comb</code>, <code>perm</code>, bytes.</td>
+        </tr>
+        <tr>
+          <td><a href="02-floats.html">Float</a></td>
+          <td><code>Double</code></td>
+          <td>Binary64, read and written so that the text is the shortest one
+          that reads back — and the exact value one query away.</td>
+        </tr>
+        <tr>
+          <td><a href="03-complex.html">Complex</a></td>
+          <td><code>Complex</code></td>
+          <td><code>{ re, im }</code> of doubles, with the signed-zero,
+          infinity and NaN rules written down rather than hoped for.</td>
+        </tr>
+        <tr>
+          <td><a href="04-fractions.html">Fraction</a></td>
+          <td><code>Fraction</code></td>
+          <td><code>{ num, den }</code>, always in lowest terms with a positive
+          denominator, so arithmetic never drifts.</td>
+        </tr>
+      </table>
+
+      <figure>
+        <svg viewBox="0 0 680 168" role="img" aria-label="The numeric tower: integers promote to fractions, fractions to floats, floats to complex numbers.">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+          <g font-family="ui-monospace, Menlo, monospace" font-size="13" fill="currentColor">
+            <rect x="14" y="86" width="140" height="42" fill="none" stroke="currentColor" stroke-width="1"/>
+            <text x="28" y="104">Int</text>
+            <text x="28" y="118" font-size="9" opacity="0.6">BigInt · unbounded</text>
+
+            <rect x="186" y="64" width="140" height="42" fill="none" stroke="currentColor" stroke-width="1"/>
+            <text x="200" y="82">Fraction</text>
+            <text x="200" y="96" font-size="9" opacity="0.6">num/den · exact</text>
+
+            <rect x="358" y="42" width="140" height="42" fill="none" stroke="currentColor" stroke-width="1"/>
+            <text x="372" y="60">Float</text>
+            <text x="372" y="74" font-size="9" opacity="0.6">binary64</text>
+
+            <rect x="530" y="20" width="140" height="42" fill="none" stroke="currentColor" stroke-width="1"/>
+            <text x="544" y="38">Complex</text>
+            <text x="544" y="52" font-size="9" opacity="0.6">two doubles</text>
+
+            <line x1="154" y1="98" x2="182" y2="85" stroke="currentColor" stroke-width="1" marker-end="url(#arrow)"/>
+            <line x1="326" y1="76" x2="354" y2="63" stroke="currentColor" stroke-width="1" marker-end="url(#arrow)"/>
+            <line x1="498" y1="54" x2="526" y2="41" stroke="currentColor" stroke-width="1" marker-end="url(#arrow)"/>
+
+            <text x="14" y="156" font-size="10" opacity="0.65">1 == 1.0 == 3/3 == 1+0j — comparison is exact at every step</text>
+          </g>
+        </svg>
+        <figcaption>Promotion only ever goes right. Comparison never rounds.</figcaption>
+      </figure>
+
+      <p>
+        <code>Number</code> holds any of the four and does the mixing, so a
+        literal, a ratio and a float can meet in one expression:
+      </p>
+      <div class="pair">
+        <div>
+          <div class="label">moonbit</div>
+<pre><code>let third = @moonnum.parse("1/3")
+@moonnum.parse("1") + third
+@moonnum.repr_float(0.1 + 0.2)</code></pre>
+        </div>
+        <div>
+          <div class="label">output</div>
+<pre><code>4/3
+0.30000000000000004</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>Reading and writing</h2>
+      <p>
+        Every parser takes the spellings you already type: base prefixes,
+        underscores between digits, surrounding whitespace, <code>inf</code> and
+        <code>nan</code> in any case, <code>1+2j</code> and <code>3+5i</code>.
+        Refusals carry the offset where the text stopped making sense.
+      </p>
+
+      <div class="pair">
+        <div>
+          <div class="label">moonbit</div>
+<pre><code>@moonnum.parse_int("0xff_ec", base=0)
+@moonnum.parse_float("1_000.5e-2")
+@moonnum.parse_complex("(3+4j)")
+@moonnum.parse_fraction("-1.25")</code></pre>
+        </div>
+        <div>
+          <div class="label">output</div>
+<pre><code>65516
+10.005
+(3+4j)
+-5/4</code></pre>
+        </div>
+      </div>
+
+      <p>
+        Writing is the other half, and the half that is usually wrong.
+        <code>repr_float</code> gives the shortest string that reads back as the
+        same double, and switches to an exponent exactly where the digits would
+        start lying.
+      </p>
+
+      <div class="pair">
+        <div>
+          <div class="label">moonbit</div>
+<pre><code>@moonnum.repr_float(1.0e15)
+@moonnum.repr_float(1.0e16)
+@moonnum.repr_float(1.0e-5)
+@moonnum.float_hex(0.1)
+@moonnum.repr_complex(@moonnum.parse_complex("-0-1j"))</code></pre>
+        </div>
+        <div>
+          <div class="label">output</div>
+<pre><code>1000000000000000.0
+1e+16
+1e-05
+0x1.999999999999ap-4
+(-0-1j)</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>One formatting language</h2>
+      <p>
+        Fill, alignment, sign, <code>z</code>, <code>#</code>, zero padding,
+        width, grouping and precision, with the presentation types
+        <code>b c d e E f F g G n o x X %</code>. The same specifier works on
+        every kind, including the exact ones.
+      </p>
+
+      <table>
+        <tr><th>Spec</th><th>Value</th><th>Result</th></tr>
+        <tr><td><code>015,d</code></td><td>1234567</td><td><code>000,001,234,567</code></td></tr>
+        <tr><td><code>#010_x</code></td><td>255</td><td><code>0x000_00ff</code></td></tr>
+        <tr><td><code>*^12.2f</code></td><td>3.14159</td><td><code>****3.14****</code></td></tr>
+        <tr><td><code>.3%</code></td><td>1/3</td><td><code>33.333%</code></td></tr>
+        <tr><td><code>+.1e</code></td><td>1.5</td><td><code>+1.5e+00</code></td></tr>
+        <tr><td><code>z</code></td><td>-0.0</td><td><code>0.0</code></td></tr>
+      </table>
+
+      <p>
+        Zero padding participates in grouping, <code>z</code> acts before the
+        sign is chosen, and <code>#</code> keeps the zeros <code>g</code> would
+        drop. Those three sentences are the whole difference between a formatter
+        and a correct formatter, and each is a test.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>Failure is a value</h2>
+      <p>
+        One error type, four cases, no panics. Division is a function rather
+        than an operator, because a numeric library that aborts on zero is worse
+        than one that says so.
+      </p>
+      <div class="pair">
+        <div>
+          <div class="label">moonbit</div>
+<pre><code>pub(all) suberror Refused {
+  Malformed(at~ : Int, reason~ : String)
+  ZeroDivision
+  Overflow(reason~ : String)
+  Domain(reason~ : String)
+}</code></pre>
+        </div>
+        <div>
+          <div class="label">what it means</div>
+<pre><code>text stopped making sense
+   at this UTF-16 offset
+1/0, 1 % 0, Fraction(1, 0)
+does not fit the target type
+defined input, no answer</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>Start</h2>
+<pre><code>moon add moonbitstack/moonnum</code></pre>
+      <p>
+        Then <a href="01-integers.html">read the tutorial</a> — five pages, one
+        per kind plus the format language, each one runnable as written. The
+        <a href="api.html">API reference</a> lists every public item, and
+        <a href="algorithms.html">the design notes</a> explain where the digits
+        come from.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>moonnum · Apache-2.0</span>
+    <a href="https://github.com/moonbitstack/moonnum">source</a>
+    <a href="api.html">api</a>
+    <a href="algorithms.html">design</a>
+    <span class="spacer">built for MoonBit</span>
+  </div>
+</footer>
+
+</body>
+</html>

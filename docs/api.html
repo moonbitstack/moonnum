@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>API reference — moonnum</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="bar">
+  <div class="wrap">
+    <a class="wordmark" href="index.html">moonnum<span class="dot">.</span></a>
+    <nav>
+      <a href="01-integers.html">Tutorial</a>
+      <a href="api.html" aria-current="page">API</a>
+      <a href="algorithms.html">Algorithms</a>
+      <a href="https://github.com/moonbitstack/moonnum">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<article class="lesson">
+  <div class="folio"><span>Reference</span><span>Every public item</span></div>
+  <h1>API reference</h1>
+  <p class="lede">
+    Signatures as the compiler sees them, prose as written beside the code.
+    Generated from the module interface, so nothing here is aspirational.
+  </p>
+
+<nav class="jump"><a href="#integers">Integers</a><a href="#floats">Floats</a><a href="#complex-numbers">Complex numbers</a><a href="#fractions">Fractions</a><a href="#numbers">Numbers</a><a href="#formatting">Formatting</a><a href="#errors">Errors</a></nav>
+
+<section class="api-group" id="integers">
+<h2>Integers</h2>
+<p class="lede"><p>Arbitrary-precision integers: core&#x27;s <code>BigInt</code>, plus the operations and spellings a numeric program needs.</p></p>
+<div class="item">
+<p class="sig">pub fn <span class="name">bit_length</span>(@bigint.BigInt) -&gt; Int32</p>
+<div class="doc"><p>The number of bits needed to represent <code>n</code>, sign excluded: <code>int.bit_length</code>.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">comb</span>(@bigint.BigInt, @bigint.BigInt) -&gt; @bigint.BigInt raise Refused</p>
+<div class="doc"><p><code>math.comb(n, k)</code>: the number of ways to choose <code>k</code> from <code>n</code> without repetition.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">divmod</span>(@bigint.BigInt, @bigint.BigInt) -&gt; (@bigint.BigInt, @bigint.BigInt) raise Refused</p>
+<div class="doc"><p><code>divmod(a, b)</code>: the floor quotient and the matching remainder.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">factorial</span>(@bigint.BigInt) -&gt; @bigint.BigInt raise Refused</p>
+<div class="doc"><p><code>math.factorial(n)</code>.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">floor_mod</span>(@bigint.BigInt, @bigint.BigInt) -&gt; @bigint.BigInt raise Refused</p>
+<div class="doc"><p><code>a % b</code>: the remainder that takes the sign of the divisor.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">floordiv</span>(@bigint.BigInt, @bigint.BigInt) -&gt; @bigint.BigInt raise Refused</p>
+<div class="doc"><p><code>a // b</code>: the quotient rounded towards negative infinity.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">gcd</span>(@bigint.BigInt, @bigint.BigInt) -&gt; @bigint.BigInt</p>
+<div class="doc"><p>The greatest common divisor, always non-negative.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">isqrt</span>(@bigint.BigInt) -&gt; @bigint.BigInt raise Refused</p>
+<div class="doc"><p><code>math.isqrt(n)</code>: the floor of the square root.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">lcm</span>(@bigint.BigInt, @bigint.BigInt) -&gt; @bigint.BigInt</p>
+<div class="doc"><p>The least common multiple, always non-negative; zero when either side is.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">of_bytes</span>(BytesView, big? : Bool, signed? : Bool) -&gt; @bigint.BigInt</p>
+<div class="doc"><p><code>int.from_bytes</code>: the integer held by <code>bytes</code>, big-endian unless <code>big~ = false</code>, two&#x27;s complement when <code>signed~ = true</code>.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">parse_int</span>(StringView, base? : Int32) -&gt; @bigint.BigInt raise Refused</p>
+<div class="doc"><p><code>int(text, base)</code>: an integer in any base from 2 to 36, with Python&#x27;s spelling rules.</p>
+<p>Surrounding whitespace is allowed, the sign is optional, digits may be separated by single underscores, and <code>base = 0</code> means &quot;read the prefix&quot;: <code>0x</code> for hexadecimal, <code>0o</code> for octal, <code>0b</code> for binary, decimal otherwise — and, as in Python, leading zeros are then not allowed.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">perm</span>(@bigint.BigInt, @bigint.BigInt) -&gt; @bigint.BigInt raise Refused</p>
+<div class="doc"><p><code>math.perm(n, k)</code>: the number of ways to choose <code>k</code> from <code>n</code> in order.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">power</span>(@bigint.BigInt, @bigint.BigInt, modulus? : @bigint.BigInt) -&gt; @bigint.BigInt raise Refused</p>
+<div class="doc"><p><code>pow(base, exp, modulus)</code>, and <code>pow(base, exp)</code> when <code>modulus</code> is absent.</p>
+<p>With a modulus and a negative exponent the result is the modular inverse raised to <code>-exp</code>, which is Python&#x27;s behaviour since 3.8. Without a modulus a negative exponent has no integer answer and is refused.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">to_bytes</span>(@bigint.BigInt, length~ : Int32, big? : Bool, signed? : Bool) -&gt; Bytes raise Refused</p>
+<div class="doc"><p><code>int.to_bytes</code>: <code>length</code> bytes holding <code>n</code>, big-endian unless <code>big~ = false</code>.</p>
+<p>A signed result is two&#x27;s complement; an unsigned one refuses negatives.</p></div>
+</div>
+</section>
+
+<section class="api-group" id="floats">
+<h2>Floats</h2>
+<p class="lede"><p>Reading, writing and rounding IEEE-754 doubles.</p></p>
+<div class="item">
+<p class="sig">pub fn <span class="name">as_integer_ratio</span>(Double) -&gt; (@bigint.BigInt, @bigint.BigInt) raise Refused</p>
+<div class="doc"><p><code>float.as_integer_ratio</code>: the exact numerator and denominator of <code>d</code>.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">as_ratio</span>(Double) -&gt; Fraction raise Refused</p>
+<div class="doc"><p><code>d</code> as an exact fraction.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">ceil_big</span>(Double) -&gt; @bigint.BigInt raise Refused</p>
+<div class="doc"><p><code>math.ceil(d)</code>, as an integer.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">float_hex</span>(Double) -&gt; String</p>
+<div class="doc"><p>The hexadecimal form of a double: <code>float.hex</code>.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">float_of_hex</span>(StringView) -&gt; Double raise Refused</p>
+<div class="doc"><p><code>float.fromhex</code>: the double a hexadecimal literal denotes.</p>
+<p>The <code>0x</code> prefix is optional, the exponent is decimal and introduced by <code>p</code>, and the rounding is the same half-to-even as every other conversion here.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">floor_big</span>(Double) -&gt; @bigint.BigInt raise Refused</p>
+<div class="doc"><p><code>math.floor(d)</code>, as an integer.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">parse_float</span>(StringView) -&gt; Double raise Refused</p>
+<div class="doc"><p><code>float(text)</code>: Python&#x27;s float literal syntax.</p>
+<p>Accepts <code>inf</code>, <code>infinity</code> and <code>nan</code> in any case with an optional sign, decimal forms with or without a fractional part or an exponent, single underscores between digits, and surrounding whitespace. Hexadecimal literals are not float syntax; <code>float_of_hex</code> reads those.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">repr_float</span>(Double) -&gt; String</p>
+<div class="doc"><p><code>repr(float)</code>: the shortest string that reads back as the same double.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">round_big</span>(Double) -&gt; @bigint.BigInt raise Refused</p>
+<div class="doc"><p><code>round(d)</code>: the nearest integer, ties to even.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">round_float</span>(Double, ndigits~ : Int32) -&gt; Double</p>
+<div class="doc"><p><code>round(d, ndigits)</code>: round to <code>ndigits</code> decimal places, ties to even, on the exact value of <code>d</code>.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">trunc_big</span>(Double) -&gt; @bigint.BigInt raise Refused</p>
+<div class="doc"><p><code>math.trunc(d)</code>, as an integer.</p></div>
+</div>
+</section>
+
+<section class="api-group" id="complex-numbers">
+<h2>Complex numbers</h2>
+<p class="lede"><p><code>Complex</code>, its arithmetic, and its repr.</p></p>
+<div class="item">
+<p class="sig">pub fn <span class="name">parse_complex</span>(StringView) -&gt; Complex raise Refused</p>
+<div class="doc"><p><code>complex(text)</code>: <code>1+2j</code>, <code>(1+2j)</code>, <code>j</code>, <code>-j</code>, <code>1e3j</code>, and <code>3+5i</code>.</p>
+<p>The <code>i</code> suffix is this library&#x27;s addition; Python only reads <code>j</code>.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">repr_complex</span>(Complex) -&gt; String</p>
+<div class="doc"><p><code>repr(z)</code>: <code>(1+2j)</code>, <code>2j</code>, <code>(-0-1j)</code>, <code>(nan+infj)</code>.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub(all) struct <span class="name">Complex</span> {
+  re : Double</p>
+<div class="doc"><p>A complex number: <code>z.re + z.im * j</code>.</p>
+<p>Adds, subtracts, multiplies, negates and compares with <code>==</code>; division is <code>Complex::divide</code> because it can refuse a zero divisor.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Complex::abs</span>(Self) -&gt; Double</p>
+<div class="doc"><p><code>abs(z)</code>: the Euclidean norm, infinity when either part is infinite.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Complex::conjugate</span>(Self) -&gt; Self</p>
+<div class="doc"><p><code>z.conjugate()</code>.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Complex::divide</span>(Self, Self) -&gt; Self raise Refused</p>
+<div class="doc"><p><code>self / other</code>.</p>
+<p>A function rather than an operator, for the same reason as <code>Fraction::divide</code>: division by zero has to be reported, and <code>Div</code> cannot.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Complex::format</span>(Self, StringView) -&gt; String raise Refused</p>
+<div class="doc"><p>Format a complex number: the real part with the specifier&#x27;s sign, the imaginary part forced positive, then <code>j</code>, in parentheses unless the real part is a positive zero.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Complex::j</span>() -&gt; Self</p>
+<div class="doc"><p>The imaginary unit.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Complex::new</span>(Double, Double) -&gt; Self</p>
+<div class="doc"><p><code>Complex(re, im)</code>.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Complex::pow</span>(Self, Self) -&gt; Self raise Refused</p>
+<div class="doc"><p><code>z ** w</code>, including Python&#x27;s special cases.</p>
+<p>An exponent that is a small integer is applied by repeated squaring, as CPython does; anything else goes through the polar form, which is why <code>(1+1j) ** 2</code> is exactly <code>2j</code> and <code>(1+1j) ** 2.0</code> is not.</p></div>
+</div>
+</section>
+
+<section class="api-group" id="fractions">
+<h2>Fractions</h2>
+<p class="lede"><p>Exact rationals, kept in lowest terms.</p></p>
+<div class="item">
+<p class="sig">pub fn <span class="name">parse_fraction</span>(StringView) -&gt; Fraction raise Refused</p>
+<div class="doc"><p><code>Fraction(text)</code>: <code>&quot;3/4&quot;</code>, <code>&quot;-1.25&quot;</code>, <code>&quot;1e-3&quot;</code>, <code>&quot;7&quot;</code>.</p>
+<p>Whitespace is allowed around the sign, the slash and the ends; digits may be separated by single underscores. The decimal and exponent forms are read as exact powers of ten, never through a float.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">repr_fraction</span>(Fraction) -&gt; String</p>
+<div class="doc"><p><code>repr(Fraction(3, 4))</code>.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub(all) struct <span class="name">Fraction</span> {
+  num : @bigint.BigInt</p>
+<div class="doc"><p>A rational number. <code>den</code> is always positive and <code>gcd(num, den)</code> is always 1, so <code>num</code> and <code>den</code> can be read directly.</p>
+<p>Adds, subtracts, multiplies, negates, compares with <code>==</code> and an ordering; division is <code>Fraction::divide</code> because it can refuse a zero divisor.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fraction::abs</span>(Self) -&gt; Self</p>
+<div class="doc"><p>The same value without its sign.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fraction::ceil_big</span>(Self) -&gt; @bigint.BigInt</p>
+<div class="doc"><p><code>math.ceil</code>, as an integer.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fraction::denominator</span>(Self) -&gt; @bigint.BigInt</p>
+<div class="doc"><p>The denominator, always positive.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fraction::divide</span>(Self, Self) -&gt; Self raise Refused</p>
+<div class="doc"><p><code>self / other</code>.</p>
+<p>Division is a function and not an operator here: MoonBit&#x27;s <code>Div</code> trait cannot raise, and a fraction that silently divides by zero or panics would be worse than one that says <code>ZeroDivision</code>.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fraction::floor_big</span>(Self) -&gt; @bigint.BigInt</p>
+<div class="doc"><p><code>math.floor</code>, as an integer.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fraction::floor_divide_big</span>(Self, Self) -&gt; @bigint.BigInt raise Refused</p>
+<div class="doc"><p><code>self // other</code> as an integer: Python&#x27;s floor division of two fractions.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fraction::format</span>(Self, StringView) -&gt; String raise Refused</p>
+<div class="doc"><p>Format a fraction. Without a presentation type it is a ratio, with a digit grouping separator allowed in both halves; with a float type it is the exact rational rounded to the requested digits.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fraction::is_integer</span>(Self) -&gt; Bool</p>
+<div class="doc"><p>Whether the value is a whole number.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fraction::limit_denominator</span>(Self, max~ : @bigint.BigInt) -&gt; Self raise Refused</p>
+<div class="doc"><p>The closest fraction whose denominator is at most <code>max</code>.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fraction::modulo</span>(Self, Self) -&gt; Self raise Refused</p>
+<div class="doc"><p><code>self % other</code>: the remainder that takes the sign of the divisor.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fraction::new</span>(@bigint.BigInt, @bigint.BigInt) -&gt; Self raise Refused</p>
+<div class="doc"><p><code>Fraction(num, den)</code>.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fraction::numerator</span>(Self) -&gt; @bigint.BigInt</p>
+<div class="doc"><p>The numerator, with the sign.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fraction::of_float</span>(Double) -&gt; Self raise Refused</p>
+<div class="doc"><p>The exact value of a float, as a fraction. <code>0.1</code> is not <code>1/10</code> here; it is <code>3602879701896397/36028797018963968</code>, which is what the double holds.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fraction::of_int</span>(@bigint.BigInt) -&gt; Self</p>
+<div class="doc"><p>The integer <code>n</code> as a fraction.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fraction::reciprocal</span>(Self) -&gt; Self raise Refused</p>
+<div class="doc"><p><code>1/self</code>.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fraction::round</span>(Self, ndigits~ : Int32) -&gt; Self</p>
+<div class="doc"><p><code>round(self, ndigits)</code>: round to <code>ndigits</code> decimal places, ties to even.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fraction::round_big</span>(Self) -&gt; @bigint.BigInt</p>
+<div class="doc"><p><code>round(self)</code>: the nearest integer, ties to even.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fraction::to_double</span>(Self) -&gt; Double raise Refused</p>
+<div class="doc"><p>The nearest double, or <code>Overflow</code> when the value does not fit.</p></div>
+</div>
+</section>
+
+<section class="api-group" id="numbers">
+<h2>Numbers</h2>
+<p class="lede"><p>The tower: one value that can be any of the four kinds.</p></p>
+<div class="item">
+<p class="sig">pub fn <span class="name">parse</span>(StringView) -&gt; Number raise Refused</p>
+<div class="doc"><p><code>parse(text)</code>: read a Python number literal and keep the kind it spelled.</p>
+<p>A <code>/</code> makes a fraction, a trailing <code>j</code> or <code>i</code> makes a complex number, a point or an exponent or <code>inf</code>/<code>nan</code> makes a float, and anything else is an integer in whatever base its prefix names.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub(all) enum <span class="name">Number</span> {
+  Int(@bigint.BigInt)</p>
+<div class="doc"><p>A number of any kind, as the tower arranges them.</p>
+<p>Promotion goes <code>Int</code> → <code>Fraction</code> → <code>Float</code> → <code>Complex</code>. Comparison is exact across the tower: an integer is never rounded to a float to be compared with one.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Number::compare_numeric</span>(Self, Self) -&gt; Int32 raise Refused</p>
+<div class="doc"><p>Compare two real numbers, exactly.</p>
+<p>Raises <code>Domain</code> for a NaN operand and for a complex number with a non-zero imaginary part, which Python refuses to order.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Number::divide</span>(Self, Self) -&gt; Self raise Refused</p>
+<div class="doc"><p><code>a / b</code>, with Python&#x27;s result kinds: two integers divide to a float, a fraction stays exact, and a complex number is complex.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Number::equal_numeric</span>(Self, Self) -&gt; Bool</p>
+<div class="doc"><p><code>a == b</code>, across the tower: <code>1 == 1.0 == Fraction(1) == 1 + 0j</code>.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Number::floor_mod</span>(Self, Self) -&gt; Self raise Refused</p>
+<div class="doc"><p><code>a % b</code>: the remainder that takes the sign of the divisor.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Number::floordiv</span>(Self, Self) -&gt; Self raise Refused</p>
+<div class="doc"><p><code>a // b</code>.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Number::pow</span>(Self, Self) -&gt; Self raise Refused</p>
+<div class="doc"><p><code>a ** b</code>.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Number::to_double</span>(Self) -&gt; Double raise Refused</p>
+<div class="doc"><p>The value as a double, or <code>Overflow</code> when it is infinite or not real.</p></div>
+</div>
+</section>
+
+<section class="api-group" id="formatting">
+<h2>Formatting</h2>
+<p class="lede"><p>The format-specification mini-language.</p></p>
+<div class="item">
+<p class="sig">pub fn <span class="name">format</span>(Number, StringView) -&gt; String raise Refused</p>
+<div class="doc"><p><code>format(value, spec)</code>, for any number.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">format_float</span>(Double, StringView) -&gt; String raise Refused</p>
+<div class="doc"><p>Format a double the way Python&#x27;s <code>format()</code> does.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">format_int</span>(@bigint.BigInt, StringView) -&gt; String raise Refused</p>
+<div class="doc"><p>Format an integer, including the float types Python allows on integers by converting them.</p></div>
+</div>
+</section>
+
+<section class="api-group" id="errors">
+<h2>Errors</h2>
+<p class="lede"><p>One type, four cases.</p></p>
+<div class="item">
+<p class="sig">pub(all) suberror <span class="name">Refused</span> {
+  Malformed(at~ : Int32, reason~ : String)</p>
+<div class="doc"><p>Everything this library refuses, in one type.</p>
+<p><code>Malformed</code> carries the offset where the input stopped making sense, in UTF-16 code units — the unit <code>StringView</code> indexes by — so a caller can point at the character instead of at the string.</p></div>
+</div>
+</section>
+
+</article>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>moonnum · Apache-2.0</span>
+    <a href="https://github.com/moonbitstack/moonnum">source</a>
+    <a href="01-integers.html">tutorial</a>
+    <span class="spacer">built for MoonBit</span>
+  </div>
+</footer>
+
+</body>
+</html>

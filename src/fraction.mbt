@@ -3,6 +3,9 @@
 ///|
 /// A rational number. `den` is always positive and `gcd(num, den)` is always 1,
 /// so `num` and `den` can be read directly.
+///
+/// Adds, subtracts, multiplies, negates, compares with `==` and an ordering;
+/// division is `Fraction::divide` because it can refuse a zero divisor.
 pub(all) struct Fraction {
   num : @bigint.BigInt
   den : @bigint.BigInt
@@ -392,7 +395,7 @@ pub fn repr_fraction(f : Fraction) -> String {
 
 ///|
 /// `str(Fraction(3, 4))`: `3/4`, and `2` when the denominator is one.
-impl Show for Fraction with fn to_string(self) {
+pub impl Show for Fraction with fn to_string(self) {
   if self.den == 1N {
     self.num.to_string()
   } else {
@@ -401,32 +404,32 @@ impl Show for Fraction with fn to_string(self) {
 }
 
 ///|
-impl Default for Fraction with fn default() {
+pub impl Default for Fraction with fn default() {
   { num: 0N, den: 1N, }
 }
 
 ///|
-impl Eq for Fraction with fn equal(self, other) {
+pub impl Eq for Fraction with fn equal(self, other) {
   self.num == other.num && self.den == other.den
 }
 
 ///|
-impl Compare for Fraction with fn compare(self, other) {
+pub impl Compare for Fraction with fn compare(self, other) {
   (self.num * other.den).compare(other.num * self.den)
 }
 
 ///|
-impl Add for Fraction with fn add(self, other) {
+pub impl Add for Fraction with fn add(self, other) {
   make(self.num * other.den + other.num * self.den, self.den * other.den)
 }
 
 ///|
-impl Sub for Fraction with fn sub(self, other) {
+pub impl Sub for Fraction with fn sub(self, other) {
   make(self.num * other.den - other.num * self.den, self.den * other.den)
 }
 
 ///|
-impl Mul for Fraction with fn mul(self, other) {
+pub impl Mul for Fraction with fn mul(self, other) {
   make(self.num * other.num, self.den * other.den)
 }
 
@@ -447,12 +450,12 @@ pub fn Fraction::divide(
 }
 
 ///|
-impl Neg for Fraction with fn neg(self) {
+pub impl Neg for Fraction with fn neg(self) {
   { num: -self.num, den: self.den, }
 }
 
 ///|
-pub extend Fraction with Show::{to_string}
+pub extend Fraction with Show::{to_string, output}
 
 ///|
 pub extend Fraction with Default::{default}
@@ -461,7 +464,7 @@ pub extend Fraction with Default::{default}
 pub extend Fraction with Eq::{equal, not_equal}
 
 ///|
-pub extend Fraction with Compare::{compare}
+pub extend Fraction with Compare::{compare, op_lt, op_le, op_gt, op_ge}
 
 ///|
 pub extend Fraction with Add::{add}

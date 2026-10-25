@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How the digits are made — moonnum</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="bar">
+  <div class="wrap">
+    <a class="wordmark" href="index.html">moonnum<span class="dot">.</span></a>
+    <nav>
+      <a href="01-integers.html">Tutorial</a>
+      <a href="api.html">API</a>
+      <a href="algorithms.html" aria-current="page">Algorithms</a>
+      <a href="https://github.com/moonbitstack/moonnum">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<article class="lesson">
+  <div class="folio"><span>Design</span><span>Algorithms</span></div>
+  <h1>Where the digits come from</h1>
+  <p class="lede">
+    Three procedures do all the work: turning a rational into rounded decimal
+    digits, turning those digits into a laid-out field, and comparing two numbers
+    of different kinds without rounding either. Everything else is bookkeeping.
+  </p>
+
+  <h3>One, the exact decimal kernel</h3>
+  <p>
+    A <code>Double</code> is a rational whose denominator is a power of two, and
+    a <code>Fraction</code> is one already. So the kernel never sees a double: it
+    sees <code>num/den</code>, both <code>BigInt</code>, and it produces digits by
+    integer division only. No step of the conversion is itself rounded.
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 680 232" role="img" aria-label="A double decomposed into mantissa and exponent, converted to a rational, then to rounded decimal digits.">
+      <g font-family="ui-monospace, Menlo, monospace" font-size="12" fill="currentColor">
+        <rect x="10" y="16" width="150" height="58" fill="none" stroke="currentColor"/>
+        <text x="22" y="38">double</text>
+        <text x="22" y="56" font-size="10" opacity="0.65">sign · mantissa · exp</text>
+
+        <rect x="190" y="16" width="160" height="58" fill="none" stroke="currentColor"/>
+        <text x="202" y="38">num / den</text>
+        <text x="202" y="56" font-size="10" opacity="0.65">m·2^e over 1 or 2^−e</text>
+
+        <rect x="380" y="16" width="150" height="58" fill="none" stroke="currentColor"/>
+        <text x="392" y="38">floor_log10</text>
+        <text x="392" y="56" font-size="10" opacity="0.65">exact exponent</text>
+
+        <rect x="560" y="16" width="110" height="58" fill="none" stroke="currentColor"/>
+        <text x="572" y="38">digits</text>
+        <text x="572" y="56" font-size="10" opacity="0.65">+ decpt</text>
+
+        <line x1="160" y1="45" x2="186" y2="45" stroke="currentColor" marker-end="url(#a2)"/>
+        <line x1="350" y1="45" x2="376" y2="45" stroke="currentColor" marker-end="url(#a2)"/>
+        <line x1="530" y1="45" x2="556" y2="45" stroke="currentColor" marker-end="url(#a2)"/>
+
+        <rect x="190" y="110" width="340" height="50" fill="none" stroke="currentColor" stroke-dasharray="3 3"/>
+        <text x="202" y="131" font-size="11">q, r = divmod(num · 10^k, den)</text>
+        <text x="202" y="149" font-size="11" opacity="0.7">round up when 2r &gt; den, or 2r = den and q is odd</text>
+
+        <text x="10" y="196" font-size="11" opacity="0.75">0.1 → 3602879701896397 / 2^55 → 55 exact digits, decpt 0</text>
+        <text x="10" y="214" font-size="11" opacity="0.75">0.1000000000000000055511151231257827021181583404541015625 → "0.1"</text>
+      </g>
+      <defs>
+        <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+        </marker>
+      </defs>
+    </svg>
+    <figcaption>The kernel, from bits to digits.</figcaption>
+  </figure>
+
+  <h3>Two, three ways to choose digits</h3>
+  <p>
+    Everything that prints a float asks for one of three modes. The mode, not the
+    caller, decides how the digits are rounded, and the layout step never
+    re-rounds anything.
+  </p>
+
+  <table>
+    <tr><th>Mode</th><th>Digits</th><th>Used by</th></tr>
+    <tr><td>shortest</td><td>the fewest that read back as the same double</td><td><code>repr_float</code>, a specifier with no type and no precision</td></tr>
+    <tr><td>significant</td><td>exactly <code>n</code>, half to even, trailing zeros dropped</td><td><code>e</code>, <code>E</code>, <code>g</code>, <code>G</code>, <code>n</code></td></tr>
+    <tr><td>fixed</td><td>exactly <code>n</code> after the point, half to even</td><td><code>f</code>, <code>F</code>, <code>%</code></td></tr>
+  </table>
+
+  <p>
+    The digits then carry a decimal point position, <code>decpt</code>, and the
+    choice between <code>0.00012</code> and <code>1.2e-04</code> is made on
+    <code>decpt</code> alone. That is the same rule for every mode, which is why
+    a specifier and a repr never disagree about where the exponent starts.
+  </p>
+
+  <h3>Three, the field</h3>
+  <p>
+    A formatted number is not a string that gets padded. It is six slots, filled
+    in this order, and padding is a decision about which slot grows.
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 680 200" role="img" aria-label="The six parts of a formatted number: left padding, sign, prefix, zero padding, grouped digits, point and fraction and exponent, right padding.">
+      <g font-family="ui-monospace, Menlo, monospace" font-size="11" fill="currentColor">
+        <rect x="10" y="30" width="70" height="44" fill="none" stroke="currentColor"/>
+        <text x="18" y="57">pad</text>
+
+        <rect x="84" y="30" width="46" height="44" fill="none" stroke="currentColor"/>
+        <text x="92" y="57">sign</text>
+
+        <rect x="134" y="30" width="58" height="44" fill="none" stroke="currentColor"/>
+        <text x="142" y="57">prefix</text>
+
+        <rect x="196" y="30" width="66" height="44" fill="none" stroke="currentColor"/>
+        <text x="204" y="57">zeros</text>
+
+        <rect x="266" y="30" width="134" height="44" fill="none" stroke="currentColor"/>
+        <text x="274" y="57">grouped digits</text>
+
+        <rect x="404" y="30" width="150" height="44" fill="none" stroke="currentColor"/>
+        <text x="412" y="57">point · frac · exp</text>
+
+        <rect x="558" y="30" width="60" height="44" fill="none" stroke="currentColor"/>
+        <text x="566" y="57">pad</text>
+
+        <text x="10" y="128" font-size="11">=  puts padding in the “zeros” slot, and grouping reaches into it</text>
+        <text x="10" y="148" font-size="11">&lt; &gt; ^ put it outside, in the “pad” slots</text>
+        <text x="10" y="176" font-size="11" opacity="0.7">format(255, "#010_x") → 0x000_00ff</text>
+      </g>
+    </svg>
+    <figcaption>Six slots; a zero flag moves the fill inward, and the separators follow it.</figcaption>
+  </figure>
+
+  <h3>Four, comparing across the tower</h3>
+  <p>
+    Comparison is where a numeric library usually lies. Converting the integer to
+    a double to compare it loses the difference between
+    <code>9007199254740992</code> and <code>9007199254740993</code>, and that
+    difference is exactly the sort of thing a big-integer library exists to keep.
+    So <code>compare_numeric</code> never converts: it cross-multiplies.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>let a = @moonnum.parse("9007199254740993")
+let b = @moonnum.parse("9007199254740992.0")
+a.compare_numeric(b)</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>1     // greater, though both are the same double</code></pre>
+    </div>
+  </div>
+
+  <p>
+    NaN has no place in that order, so ordering against one is refused, and so is
+    ordering a complex number at all. Equality is a different question and has an
+    answer for every pair: <code>nan != nan</code>, and
+    <code>1 == 1.0 == 3/3 == 1+0j</code>.
+  </p>
+
+  <h3>Five, the two places complex numbers surprise</h3>
+  <p>
+    Division uses Smith's algorithm — divide both parts by whichever of the
+    divisor's components is larger — because the textbook formula overflows and
+    underflows long before the answer does. When a NaN appears where an infinity
+    belongs, the C11 Annex G recovery step reconstructs it.
+  </p>
+  <p>
+    Powers with a small integer exponent are computed by repeated squaring rather
+    than through the polar form, which is why <code>(1+1j)²</code> is exactly
+    <code>2j</code>. A fractional exponent has no such shortcut and goes through
+    <code>hypot</code>, <code>atan2</code> and <code>exp</code>, with the error
+    that implies.
+  </p>
+
+  <h3>Six, what is deliberately not here</h3>
+  <p>
+    Three edges are out of scope, and each is a decision rather than an
+    oversight:
+  </p>
+  <ul>
+    <li>
+      <strong>Locale.</strong> Presentation type <code>n</code> behaves like
+      <code>d</code> or <code>g</code> with no thousands separator, because a
+      MoonBit program has no locale to consult. Everything else about it — being
+      refused with grouping flags — matches the language this follows.
+    </li>
+    <li>
+      <strong>Unicode digits.</strong> Parsers accept ASCII digits only. A
+      full-width <code>４２</code> is refused, where the reference implementation
+      would read it as 42.
+    </li>
+    <li>
+      <strong>Grouping inside the fraction part.</strong> The integer part
+      groups; <code>0.123456789</code> does not group its fractional digits.
+    </li>
+  </ul>
+
+  <nav class="pager">
+    <a href="05-format.html">← Five: Formatting</a>
+    <a class="next" href="api.html">API reference →</a>
+  </nav>
+</article>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>moonnum · Apache-2.0</span>
+    <a href="https://github.com/moonbitstack/moonnum">source</a>
+    <a href="api.html">api</a>
+    <span class="spacer">built for MoonBit</span>
+  </div>
+</footer>
+
+</body>
+</html>

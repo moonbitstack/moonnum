@@ -1,0 +1,6 @@
+// A runnable example: `moon run examples/<name>` from the repository root.
+pkgtype(kind: "executable")
+
+import {
+  "moonbitstack/moonnum",
+}

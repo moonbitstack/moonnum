@@ -2,6 +2,9 @@
 
 ///|
 /// A complex number: `z.re + z.im * j`.
+///
+/// Adds, subtracts, multiplies, negates and compares with `==`; division is
+/// `Complex::divide` because it can refuse a zero divisor.
 pub(all) struct Complex {
   re : Double
   im : Double
@@ -441,12 +444,12 @@ pub fn parse_complex(text : StringView) -> Complex raise Refused {
 }
 
 ///|
-impl Show for Complex with fn to_string(self) {
+pub impl Show for Complex with fn to_string(self) {
   repr_complex(self)
 }
 
 ///|
-pub extend Complex with Show::{to_string}
+pub extend Complex with Show::{to_string, output}
 
 ///|
 pub extend Complex with Default::{default}
@@ -467,32 +470,32 @@ pub extend Complex with Mul::{mul}
 pub extend Complex with Neg::{neg}
 
 ///|
-impl Default for Complex with fn default() {
+pub impl Default for Complex with fn default() {
   { re: 0.0, im: 0.0, }
 }
 
 ///|
-impl Eq for Complex with fn equal(self, other) {
+pub impl Eq for Complex with fn equal(self, other) {
   self.re == other.re && self.im == other.im
 }
 
 ///|
-impl Add for Complex with fn add(self, other) {
+pub impl Add for Complex with fn add(self, other) {
   { re: self.re + other.re, im: self.im + other.im, }
 }
 
 ///|
-impl Sub for Complex with fn sub(self, other) {
+pub impl Sub for Complex with fn sub(self, other) {
   { re: self.re - other.re, im: self.im - other.im, }
 }
 
 ///|
-impl Mul for Complex with fn mul(self, other) {
+pub impl Mul for Complex with fn mul(self, other) {
   mul_complex(self, other)
 }
 
 ///|
-impl Neg for Complex with fn neg(self) {
+pub impl Neg for Complex with fn neg(self) {
   { re: -self.re, im: -self.im, }
 }
 

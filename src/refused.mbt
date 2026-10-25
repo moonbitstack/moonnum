@@ -21,7 +21,7 @@ fn[T] malformed(at : Int32, reason : StringView) -> T raise Refused {
 
 ///|
 /// The message a refusal carries, phrased for a person rather than a parser.
-impl Show for Refused with fn to_string(self) {
+pub impl Show for Refused with fn to_string(self) {
   match self {
     Malformed(at~, reason~) => reason + " at offset " + at.to_string()
     ZeroDivision => "division by zero"
@@ -31,4 +31,4 @@ impl Show for Refused with fn to_string(self) {
 }
 
 ///|
-pub extend Refused with Show::{to_string}
+pub extend Refused with Show::{to_string, output}
