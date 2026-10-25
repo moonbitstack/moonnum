@@ -53,6 +53,21 @@ GROUPS = [
     ("Errors", "One type, four cases.", ["Refused"]),
 ]
 
+# What a trait buys the reader, in the spelling they will write. The promoted
+# methods (`Complex::add`, `Fraction::op_lt`, ...) are real public functions but
+# rendering thirty-two entries called `add` would bury the reference; naming the
+# trait and the operator is the honest summary.
+TRAIT_NOTES = {
+    "Add": "+",
+    "Sub": "-",
+    "Mul": "*",
+    "Neg": "unary -",
+    "Eq": "== and !=",
+    "Compare": "<, <=, >, >=",
+    "Show": "to_string()",
+    "Default": "default()",
+}
+
 TRAIT_METHODS = {
     "add", "sub", "mul", "neg", "equal", "not_equal", "compare", "default",
     "output", "to_string", "op_lt", "op_le", "op_gt", "op_ge",
@@ -134,6 +149,32 @@ def read_mbti() -> list[tuple[str, str]]:
                 entries.append((name, signature))
         index += 1
     return entries
+
+
+def read_traits() -> dict[str, list[str]]:
+    """Which traits each type implements: `{"Complex": ["Add", ...]}`."""
+    text = MBTI.read_text(encoding="utf-8")
+    traits: dict[str, list[str]] = {}
+    for match in re.finditer(r"^pub impl (\w+) for (\w+)$", text, re.M):
+        trait, type_name = match.group(1), match.group(2)
+        traits.setdefault(type_name, []).append(trait)
+    return traits
+
+
+def render_traits(type_name: str, traits: list[str]) -> str:
+    if not traits:
+        return ""
+    parts = []
+    for trait in traits:
+        note = TRAIT_NOTES.get(trait)
+        if note:
+            parts.append(f"<code>{trait}</code> (<code>{html.escape(note)}</code>)")
+        else:
+            parts.append(f"<code>{trait}</code>")
+    tail = ("the methods they promote are public on"
+            if len(traits) > 1 else "the method it promotes is public on")
+    return (f'<p class="traits">Implements {" · ".join(parts)} — '
+            f"{tail} <code>{html.escape(type_name)}</code>.</p>")
 
 
 def declaration_name(signature: str) -> str | None:
@@ -226,6 +267,11 @@ def main() -> int:
 
     entries = read_mbti()
     docs = read_docs()
+    traits = read_traits()
+    type_names = {
+        name for name, signature in entries
+        if signature.startswith("pub(all) ")
+    }
 
     by_group: dict[str, list[tuple[str, str]]] = {name: [] for name, _, _ in GROUPS}
     claimed: set[str] = set()
@@ -274,6 +320,8 @@ def main() -> int:
             )
             if doc:
                 body.append('<div class="doc">' + render_doc(doc) + "</div>")
+            if name in type_names:
+                body.append(render_traits(name, traits.get(name, [])))
             body.append("</div>")
         body.append("</section>")
         body.append("")

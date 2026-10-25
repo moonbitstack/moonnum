@@ -164,6 +164,7 @@
   re : Double</p>
 <div class="doc"><p>A complex number: <code>z.re + z.im * j</code>.</p>
 <p>Adds, subtracts, multiplies, negates and compares with <code>==</code>; division is <code>Complex::divide</code> because it can refuse a zero divisor.</p></div>
+<p class="traits">Implements <code>Add</code> (<code>+</code>) · <code>Default</code> (<code>default()</code>) · <code>Eq</code> (<code>== and !=</code>) · <code>Mul</code> (<code>*</code>) · <code>Neg</code> (<code>unary -</code>) · <code>Show</code> (<code>to_string()</code>) · <code>Sub</code> (<code>-</code>) — the methods they promote are public on <code>Complex</code>.</p>
 </div>
 <div class="item">
 <p class="sig">pub fn <span class="name">Complex::abs</span>(Self) -&gt; Double</p>
@@ -214,6 +215,7 @@
   num : @bigint.BigInt</p>
 <div class="doc"><p>A rational number. <code>den</code> is always positive and <code>gcd(num, den)</code> is always 1, so <code>num</code> and <code>den</code> can be read directly.</p>
 <p>Adds, subtracts, multiplies, negates, compares with <code>==</code> and an ordering; division is <code>Fraction::divide</code> because it can refuse a zero divisor.</p></div>
+<p class="traits">Implements <code>Add</code> (<code>+</code>) · <code>Compare</code> (<code>&lt;, &lt;=, &gt;, &gt;=</code>) · <code>Default</code> (<code>default()</code>) · <code>Eq</code> (<code>== and !=</code>) · <code>Mul</code> (<code>*</code>) · <code>Neg</code> (<code>unary -</code>) · <code>Show</code> (<code>to_string()</code>) · <code>Sub</code> (<code>-</code>) — the methods they promote are public on <code>Fraction</code>.</p>
 </div>
 <div class="item">
 <p class="sig">pub fn <span class="name">Fraction::abs</span>(Self) -&gt; Self</p>
@@ -308,6 +310,7 @@
   Int(@bigint.BigInt)</p>
 <div class="doc"><p>A number of any kind, as the tower arranges them.</p>
 <p>Promotion goes <code>Int</code> → <code>Fraction</code> → <code>Float</code> → <code>Complex</code>. Comparison is exact across the tower: an integer is never rounded to a float to be compared with one.</p></div>
+<p class="traits">Implements <code>Add</code> (<code>+</code>) · <code>Eq</code> (<code>== and !=</code>) · <code>Mul</code> (<code>*</code>) · <code>Neg</code> (<code>unary -</code>) · <code>Show</code> (<code>to_string()</code>) · <code>Sub</code> (<code>-</code>) — the methods they promote are public on <code>Number</code>.</p>
 </div>
 <div class="item">
 <p class="sig">pub fn <span class="name">Number::compare_numeric</span>(Self, Self) -&gt; Int32 raise Refused</p>
@@ -365,6 +368,7 @@
   Malformed(at~ : Int32, reason~ : String)</p>
 <div class="doc"><p>Everything this library refuses, in one type.</p>
 <p><code>Malformed</code> carries the offset where the input stopped making sense, in UTF-16 code units — the unit <code>StringView</code> indexes by — so a caller can point at the character instead of at the string.</p></div>
+<p class="traits">Implements <code>Show</code> (<code>to_string()</code>) — the method it promotes is public on <code>Refused</code>.</p>
 </div>
 </section>
 

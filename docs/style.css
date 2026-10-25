@@ -446,6 +446,13 @@ pre code {
   border-bottom: none;
 }
 
+.item .traits {
+  margin: 0.55rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
 .item .sig {
   font-family: var(--mono);
   font-size: 0.82rem;
