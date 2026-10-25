@@ -45,6 +45,17 @@ jobs:
       - name: moon test (all backends)
         run: moon test --target all
 
+      # The examples are programs, not excerpts: each one is run, and a refusal
+      # that escapes `main` fails the build.
+      - name: examples run
+        shell: bash
+        run: |
+          for dir in src/examples/*/; do
+            echo "::group::$dir"
+            moon run "$dir" --target wasm-gc
+            echo "::endgroup::"
+          done
+
       - name: lint (fmt is clean)
         run: |
           moon fmt && git diff --exit-code
