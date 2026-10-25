@@ -1,0 +1,160 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonnum"
+
+import {
+  "moonbitlang/core/bigint",
+}
+
+// Values
+pub fn as_integer_ratio(Double) -> (@bigint.BigInt, @bigint.BigInt) raise Refused
+
+pub fn as_ratio(Double) -> Fraction raise Refused
+
+pub fn bit_length(@bigint.BigInt) -> Int32
+
+pub fn ceil_big(Double) -> @bigint.BigInt raise Refused
+
+pub fn comb(@bigint.BigInt, @bigint.BigInt) -> @bigint.BigInt raise Refused
+
+pub fn divmod(@bigint.BigInt, @bigint.BigInt) -> (@bigint.BigInt, @bigint.BigInt) raise Refused
+
+pub fn factorial(@bigint.BigInt) -> @bigint.BigInt raise Refused
+
+pub fn float_hex(Double) -> String
+
+pub fn float_of_hex(StringView) -> Double raise Refused
+
+pub fn floor_big(Double) -> @bigint.BigInt raise Refused
+
+pub fn floor_mod(@bigint.BigInt, @bigint.BigInt) -> @bigint.BigInt raise Refused
+
+pub fn floordiv(@bigint.BigInt, @bigint.BigInt) -> @bigint.BigInt raise Refused
+
+pub fn format(Number, StringView) -> String raise Refused
+
+pub fn format_float(Double, StringView) -> String raise Refused
+
+pub fn format_int(@bigint.BigInt, StringView) -> String raise Refused
+
+pub fn gcd(@bigint.BigInt, @bigint.BigInt) -> @bigint.BigInt
+
+pub fn isqrt(@bigint.BigInt) -> @bigint.BigInt raise Refused
+
+pub fn lcm(@bigint.BigInt, @bigint.BigInt) -> @bigint.BigInt
+
+pub fn of_bytes(BytesView, big? : Bool, signed? : Bool) -> @bigint.BigInt
+
+pub fn parse(StringView) -> Number raise Refused
+
+pub fn parse_complex(StringView) -> Complex raise Refused
+
+pub fn parse_float(StringView) -> Double raise Refused
+
+pub fn parse_fraction(StringView) -> Fraction raise Refused
+
+pub fn parse_int(StringView, base? : Int32) -> @bigint.BigInt raise Refused
+
+pub fn perm(@bigint.BigInt, @bigint.BigInt) -> @bigint.BigInt raise Refused
+
+pub fn power(@bigint.BigInt, @bigint.BigInt, modulus? : @bigint.BigInt) -> @bigint.BigInt raise Refused
+
+pub fn repr_complex(Complex) -> String
+
+pub fn repr_float(Double) -> String
+
+pub fn repr_fraction(Fraction) -> String
+
+pub fn round_big(Double) -> @bigint.BigInt raise Refused
+
+pub fn round_float(Double, ndigits~ : Int32) -> Double
+
+pub fn to_bytes(@bigint.BigInt, length~ : Int32, big? : Bool, signed? : Bool) -> Bytes raise Refused
+
+pub fn trunc_big(Double) -> @bigint.BigInt raise Refused
+
+// Errors
+pub(all) suberror Refused {
+  Malformed(at~ : Int32, reason~ : String)
+  ZeroDivision
+  Overflow(reason~ : String)
+  Domain(reason~ : String)
+}
+pub fn Refused::to_string(Self) -> String
+
+// Types and methods
+pub(all) struct Complex {
+  re : Double
+  im : Double
+}
+pub fn Complex::abs(Self) -> Double
+pub fn Complex::add(Self, Self) -> Self
+pub fn Complex::conjugate(Self) -> Self
+pub fn Complex::default() -> Self
+pub fn Complex::divide(Self, Self) -> Self raise Refused
+pub fn Complex::equal(Self, Self) -> Bool
+pub fn Complex::format(Self, StringView) -> String raise Refused
+pub fn Complex::j() -> Self
+pub fn Complex::mul(Self, Self) -> Self
+pub fn Complex::neg(Self) -> Self
+pub fn Complex::new(Double, Double) -> Self
+pub fn Complex::not_equal(Self, Self) -> Bool
+pub fn Complex::pow(Self, Self) -> Self raise Refused
+pub fn Complex::sub(Self, Self) -> Self
+pub fn Complex::to_string(Self) -> String
+
+pub(all) struct Fraction {
+  num : @bigint.BigInt
+  den : @bigint.BigInt
+}
+pub fn Fraction::abs(Self) -> Self
+pub fn Fraction::add(Self, Self) -> Self
+pub fn Fraction::ceil_big(Self) -> @bigint.BigInt
+pub fn Fraction::compare(Self, Self) -> Int32
+pub fn Fraction::default() -> Self
+pub fn Fraction::denominator(Self) -> @bigint.BigInt
+pub fn Fraction::divide(Self, Self) -> Self raise Refused
+pub fn Fraction::equal(Self, Self) -> Bool
+pub fn Fraction::floor_big(Self) -> @bigint.BigInt
+pub fn Fraction::floor_divide_big(Self, Self) -> @bigint.BigInt raise Refused
+pub fn Fraction::format(Self, StringView) -> String raise Refused
+pub fn Fraction::is_integer(Self) -> Bool
+pub fn Fraction::limit_denominator(Self, max~ : @bigint.BigInt) -> Self raise Refused
+pub fn Fraction::modulo(Self, Self) -> Self raise Refused
+pub fn Fraction::mul(Self, Self) -> Self
+pub fn Fraction::neg(Self) -> Self
+pub fn Fraction::new(@bigint.BigInt, @bigint.BigInt) -> Self raise Refused
+pub fn Fraction::not_equal(Self, Self) -> Bool
+pub fn Fraction::numerator(Self) -> @bigint.BigInt
+pub fn Fraction::of_float(Double) -> Self raise Refused
+pub fn Fraction::of_int(@bigint.BigInt) -> Self
+pub fn Fraction::reciprocal(Self) -> Self raise Refused
+pub fn Fraction::round(Self, ndigits~ : Int32) -> Self
+pub fn Fraction::round_big(Self) -> @bigint.BigInt
+pub fn Fraction::sub(Self, Self) -> Self
+pub fn Fraction::to_double(Self) -> Double raise Refused
+pub fn Fraction::to_string(Self) -> String
+
+pub(all) enum Number {
+  Int(@bigint.BigInt)
+  Float(Double)
+  Fraction(Fraction)
+  Complex(Complex)
+}
+pub fn Number::add(Self, Self) -> Self
+pub fn Number::compare_numeric(Self, Self) -> Int32 raise Refused
+pub fn Number::divide(Self, Self) -> Self raise Refused
+pub fn Number::equal(Self, Self) -> Bool
+pub fn Number::equal_numeric(Self, Self) -> Bool
+pub fn Number::floor_mod(Self, Self) -> Self raise Refused
+pub fn Number::floordiv(Self, Self) -> Self raise Refused
+pub fn Number::mul(Self, Self) -> Self
+pub fn Number::neg(Self) -> Self
+pub fn Number::not_equal(Self, Self) -> Bool
+pub fn Number::pow(Self, Self) -> Self raise Refused
+pub fn Number::sub(Self, Self) -> Self
+pub fn Number::to_double(Self) -> Double raise Refused
+pub fn Number::to_string(Self) -> String
+
+// Type aliases
+
+// Traits

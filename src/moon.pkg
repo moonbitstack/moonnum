@@ -1,3 +1,16 @@
+// What this package implements, and a first-hand link to the specification it
+// implements. A package without that link is not finished.
+//
+// Python's numbers on top of core's `BigInt`: int, float, complex,
+// fractions.Fraction and the format-specification mini-language.
+// https://docs.python.org/3.15/library/functions.html
+// https://docs.python.org/3.15/library/string.html#format-specification-mini-language
+// https://docs.python.org/3.15/library/fractions.html
+// Whitebox tests read the generated vectors by name, and the package alias is
+// not available inside its own package, so the "qualify it" hint has nothing to
+// point at.
+warnings = "-25"
+
 import {
   "moonbitlang/core/bigint",
   "moonbitlang/core/double",
