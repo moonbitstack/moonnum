@@ -55,6 +55,13 @@ fn main raise {
   println("with denominator <= 10:   \{pi.limit_denominator(max=10N)}")
   println("with denominator <= 1000: \{pi.limit_denominator(max=1000N)}")
 
+  // At ten digits the fraction and the double agree; at twenty they do not.
+  println("")
+  println(
+    "22/7 at 20 digits: \{@moonnum.format(@moonnum.parse("22/7"), ".20f")}",
+  )
+  println("22.0/7.0 at 20:    \{@moonnum.format_float(22.0 / 7.0, ".20f")}")
+
   // Formatting either prints the ratio or rounds it like a float.
   println("")
   println("default:  \{third.format("")}")

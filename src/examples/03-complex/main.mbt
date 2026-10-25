@@ -43,6 +43,10 @@ fn main raise {
   let two_point_zero = @moonnum.parse_complex("2.0")
   println("(1+1j) ** 2   = \{one_plus_i.pow(two)}")
   println("(1+1j) ** 2.0 = \{one_plus_i.pow(two_point_zero)}")
+  let hundred = @moonnum.parse_complex("100")
+  let half = @moonnum.parse_complex("0.5")
+  println("(1+1j) ** 100 = \{one_plus_i.pow(hundred)}")
+  println("(1+1j) ** 0.5 = \{one_plus_i.pow(half)}")
 
   // Formatting applies the specifier to both halves and keeps Python's sign
   // rules: the imaginary part always gets a sign, the real part follows you.

@@ -49,9 +49,12 @@ fn main raise {
   println("")
   println("float types")
   let x = 1234.5678
+  println("  value: \{x}")
   for spec in ["f", ".2f", "e", ".3e", "g", ".3g", "%", ".1%", ",.2f"] {
     println("  \{spec}: \{@moonnum.format_float(x, spec)}")
   }
+
+  println("  .2% of 0.25: \{@moonnum.format_float(0.25, ".2%")}")
 
   // The alternate form keeps zeros that `g` would drop, and always keeps the
   // decimal point.

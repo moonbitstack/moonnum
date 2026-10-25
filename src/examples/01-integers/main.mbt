@@ -13,10 +13,17 @@ fn main raise {
 
   // Floor division and modulo agree, whatever the signs are.
   println("")
-  println("  a     b   a//b   a%b")
+  // Columns are padded with `format_int`, which is the library formatting itself.
+  println("  " + "    a" + "     b" + "   a//b" + "    a%b")
   for (a, b) in [(7N, 2N), (-7N, 2N), (7N, -2N), (-7N, -2N)] {
     let (q, r) = @moonnum.divmod(a, b)
-    println("  \{a}   \{b}    \{q}    \{r}")
+    println(
+      "  " +
+      @moonnum.format_int(a, ">5d") +
+      @moonnum.format_int(b, ">6d") +
+      @moonnum.format_int(q, ">7d") +
+      @moonnum.format_int(r, ">7d"),
+    )
   }
 
   // A negative exponent with a modulus is a modular inverse, not a fraction.

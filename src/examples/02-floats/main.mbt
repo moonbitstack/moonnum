@@ -47,6 +47,8 @@ fn main raise {
   println("floor(-1.2) = \{@moonnum.floor_big(-1.2)}")
   println("ceil(-1.2)  = \{@moonnum.ceil_big(-1.2)}")
   println("trunc(-1.2) = \{@moonnum.trunc_big(-1.2)}")
+  // 1.0e30 is not ten to the thirtieth, and the integer says by how much.
+  println("floor(1.0e30) = \{@moonnum.floor_big(1.0e30)}")
 
   // A float is a rational whose denominator is a power of two. This is where
   // 0.1 + 0.2 comes from.

@@ -56,6 +56,15 @@ jobs:
             echo "::endgroup::"
           done
 
+      # Every number a tutorial prints must come out of the example backing that
+      # page, so a stale value fails here instead of being read and believed.
+      - name: the site agrees with the library
+        shell: bash
+        run: |
+          py=python3
+          command -v python3 >/dev/null 2>&1 || py=python
+          "$py" scripts/check_docs.py --examples
+
       - name: lint (fmt is clean)
         run: |
           moon fmt && git diff --exit-code

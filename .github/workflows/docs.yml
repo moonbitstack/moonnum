@@ -38,6 +38,9 @@ jobs:
           python3 scripts/gen_api.py
           git diff --exit-code -- docs/api.html src/pkg.generated.mbti
 
+      - name: the site names only what exists
+        run: python3 scripts/check_docs.py
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: docs
