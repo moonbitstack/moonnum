@@ -327,7 +327,7 @@ def gen_round() -> list[tuple]:
 def gen_floor() -> list[tuple]:
     rows = []
     values = [2.5, -2.5, 0.0, -0.0, 1.0, -1.0, 0.5, -0.5, 5e-324, -5e-324,
-              1e300, -1e300, 1234.9999, -1234.9999, 1e16, -1e16]
+              1e300, -1e300, 1234.9999, -1234.9999, 1e16, -1e16, 1e30]
     for value in values:
         rows.append((exact17(value), str(math.floor(value)), str(math.ceil(value)),
                      str(math.trunc(value))))
@@ -418,6 +418,11 @@ def gen_fraction_ops() -> list[tuple]:
         rows.append(("cmp", left, right, str((a > b) - (a < b))))
         rows.append(("floordiv", left, right, outcome(lambda: a // b)))
         rows.append(("mod", left, right, outcome(lambda: a % b)))
+    for text in ("1/3", "-2/3", "5/2", "0/1", "7/1", "-1/2"):
+        f = Fraction(text)
+        for exponent in ("0", "1", "2", "10", "-1", "-3"):
+            rows.append(("pow", text, exponent,
+                         outcome(lambda: str(f ** int(exponent)))))
     for text in ("7/2", "-7/2", "5/2", "1/3", "0/1"):
         f = Fraction(text)
         rows.append(("floor", text, "", str(math.floor(f))))

@@ -36,6 +36,7 @@ fn check_fraction_ops(
       "mod" => attempt(() => a.modulo(b).to_string())
       "floor" => a.floor_big().to_string()
       "ceil" => a.ceil_big().to_string()
+      "pow" => attempt(() => a.pow(bigint_of(right)).to_string())
       "round" => a.round_big().to_string()
       "roundn" => a.round(ndigits=int_of(right)).to_string()
       "double" => attempt(() => repr_float(a.to_double()))

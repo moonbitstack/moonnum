@@ -142,6 +142,7 @@ pub fn Fraction::op_gt(Self, Self) -> Bool
 pub fn Fraction::op_le(Self, Self) -> Bool
 pub fn Fraction::op_lt(Self, Self) -> Bool
 pub fn Fraction::output(Self, &Logger) -> Unit
+pub fn Fraction::pow(Self, @bigint.BigInt) -> Self raise Refused
 pub fn Fraction::reciprocal(Self) -> Self raise Refused
 pub fn Fraction::round(Self, ndigits~ : Int32) -> Self
 pub fn Fraction::round_big(Self) -> @bigint.BigInt

@@ -245,6 +245,26 @@ pub fn Fraction::abs(self : Fraction) -> Fraction {
 }
 
 ///|
+/// `self ** exp` for an integer exponent.
+///
+/// The exponent is applied to the numerator and the denominator separately, so
+/// `(2/3) ** 100` is one exact ratio and not a double that nearly is. A negative
+/// exponent reciprocates, which is why `0 ** -1` is `ZeroDivision` and
+/// `0 ** 0` is `1`, as in Python.
+pub fn Fraction::pow(
+  self : Fraction,
+  exp : @bigint.BigInt,
+) -> Fraction raise Refused {
+  let magnitude = if exp < 0N { -exp } else { exp }
+  let powered = make(self.num.pow(magnitude), self.den.pow(magnitude))
+  if exp < 0N {
+    powered.reciprocal()
+  } else {
+    powered
+  }
+}
+
+///|
 /// `1/self`.
 pub fn Fraction::reciprocal(self : Fraction) -> Fraction raise Refused {
   if self.num == 0N {

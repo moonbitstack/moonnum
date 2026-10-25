@@ -122,7 +122,9 @@
   <p>
     Floor, ceiling and truncation return integers rather than doubles, so there
     is no silent precision loss when the value is outside the range an
-    <code>Int</code> can hold.
+    <code>Int</code> can hold. The last line above is also the clearest argument
+    for reading the exact value: <code>1.0e30</code> is not ten to the thirtieth,
+    and the integer says by how much.
   </p>
 
   <div class="pair">
@@ -131,14 +133,14 @@
 <pre><code>@moonnum.floor_big(-1.2)
 @moonnum.ceil_big(-1.2)
 @moonnum.trunc_big(-1.2)
-@moonnum.floor_big(1.0e300)</code></pre>
+@moonnum.floor_big(1.0e30)</code></pre>
     </div>
     <div>
       <div class="label">output</div>
 <pre><code>-2
 -1
 -1
-999999999999999949387135297074018866963645011013410073083904</code></pre>
+1000000000000000019884624838656</code></pre>
     </div>
   </div>
 

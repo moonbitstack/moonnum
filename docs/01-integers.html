@@ -100,7 +100,7 @@
       <div class="label">output</div>
 <pre><code>5
 36
-Refused::Domain: base is not invertible for the given modulus</code></pre>
+base is not invertible for the given modulus</code></pre>
     </div>
   </div>
 
@@ -108,6 +108,14 @@ Refused::Domain: base is not invertible for the given modulus</code></pre>
     <strong>Without a modulus</strong>, a negative exponent has no integer
     result. <code>power</code> says so; if you want the float answer, ask
     <code>Number::pow</code>, which follows the tower.
+  </p>
+
+  <p class="note">
+    <strong>What a refusal prints.</strong> <code>Refused</code> has a
+    <code>Show</code> implementation, so the text above is
+    <code>err.to_string()</code>: the reason, and the offset when there was one.
+    <code>ZeroDivision</code> has no payload and prints as
+    <code>division by zero</code>.
   </p>
 
   <h3>Reading what people write</h3>
@@ -130,7 +138,7 @@ Refused::Domain: base is not invertible for the given modulus</code></pre>
 <pre><code>65516
 1000
 10
-Refused::Malformed at offset 2: unexpected trailing character</code></pre>
+unexpected trailing character at offset 2</code></pre>
     </div>
   </div>
 
@@ -149,9 +157,9 @@ Refused::Malformed at offset 2: unexpected trailing character</code></pre>
     </div>
     <div>
       <div class="label">output</div>
-<pre><code>b"\xff\xff\xff\xfe"
+<pre><code>ff ff ff fe
 -2
-Refused::Overflow: int does not fit in the requested byte length</code></pre>
+int does not fit in the requested byte length</code></pre>
     </div>
   </div>
 

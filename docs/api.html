@@ -273,6 +273,11 @@
 <div class="doc"><p>The integer <code>n</code> as a fraction.</p></div>
 </div>
 <div class="item">
+<p class="sig">pub fn <span class="name">Fraction::pow</span>(Self, @bigint.BigInt) -&gt; Self raise Refused</p>
+<div class="doc"><p><code>self ** exp</code> for an integer exponent.</p>
+<p>The exponent is applied to the numerator and the denominator separately, so <code>(2/3) ** 100</code> is one exact ratio and not a double that nearly is. A negative exponent reciprocates, which is why <code>0 ** -1</code> is <code>ZeroDivision</code> and <code>0 ** 0</code> is <code>1</code>, as in Python.</p></div>
+</div>
+<div class="item">
 <p class="sig">pub fn <span class="name">Fraction::reciprocal</span>(Self) -&gt; Self raise Refused</p>
 <div class="doc"><p><code>1/self</code>.</p></div>
 </div>

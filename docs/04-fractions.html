@@ -106,6 +106,30 @@ a + @moonnum.parse_fraction("0.5")</code></pre>
     </div>
   </div>
 
+  <h3>Powers stay ratios</h3>
+  <p>
+    An integer exponent is applied to the numerator and the denominator
+    separately; nothing is converted to a double on the way. A negative exponent
+    reciprocates, so only a zero base can refuse.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>@moonnum.parse_fraction("2/3").pow(3N)
+@moonnum.parse_fraction("2/3").pow(-1N)
+@moonnum.parse_fraction("7/2").pow(10N)
+@moonnum.parse_fraction("0").pow(-1N)</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>8/27
+3/2
+282475249/1024
+division by zero</code></pre>
+    </div>
+  </div>
+
   <h3>The best small denominator</h3>
   <p>
     <code>limit_denominator</code> finds the closest fraction whose denominator

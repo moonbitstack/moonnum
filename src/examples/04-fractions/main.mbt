@@ -34,6 +34,19 @@ fn main raise {
   println("floor(-7/2) = \{@moonnum.parse_fraction("-7/2").floor_big()}")
   println("ceil(-7/2)  = \{@moonnum.parse_fraction("-7/2").ceil_big()}")
 
+  // A power keeps the value a ratio: the exponent goes to the numerator and
+  // the denominator separately, so nothing is rounded on the way.
+  println("")
+  let two_thirds = @moonnum.parse_fraction("2/3")
+  println("(2/3) ** 3  = \{two_thirds.pow(3N)}")
+  println("(2/3) ** -1 = \{two_thirds.pow(-1N)}")
+  println("(7/2) ** 10 = \{@moonnum.parse_fraction("7/2").pow(10N)}")
+  let zero_power : String = @moonnum.parse_fraction("0").pow(-1N).to_string() catch {
+      @moonnum.ZeroDivision => "division by zero"
+      _ => "refused"
+    }
+  println("0 ** -1     = \{zero_power}")
+
   // The best rational approximation with a small denominator: the way to turn
   // 3.141592653589793 into 355/113.
   println("")

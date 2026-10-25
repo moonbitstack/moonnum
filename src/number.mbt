@@ -327,24 +327,8 @@ pub fn Number::pow(self : Number, exponent : Number) -> Number raise Refused {
         let neg = den < 0N
         Number::Float(ratio_to_double(neg, if neg { -den } else { den }, 1N))
       }
-    (Fraction(base), Int(e)) => {
-      let magnitude = if e < 0N { -e } else { e }
-      let powered = Fraction::new(
-        base.num.pow(magnitude),
-        base.den.pow(magnitude),
-      ) catch {
-        (err : Refused) => raise err
-      }
-      if e < 0N {
-        Number::Fraction(
-          powered.reciprocal() catch {
-            (err : Refused) => raise err
-          },
-        )
-      } else {
-        Number::Fraction(powered)
-      }
-    }
+    (Fraction(base), Int(e)) =>
+      Number::Fraction(base.pow(e) catch { (err : Refused) => raise err })
     (Complex(base), _) =>
       Number::Complex(
         base.pow(as_complex(exponent)) catch {

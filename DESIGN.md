@@ -364,6 +364,7 @@ pub fn Fraction::denominator(self) -> BigInt
 pub fn Fraction::abs(self) -> Fraction
 pub fn Fraction::reciprocal(self) -> Fraction raise Refused
 pub fn Fraction::is_integer(self) -> Bool
+pub fn Fraction::pow(self, exp : BigInt) -> Fraction raise Refused
 pub fn Fraction::to_double(self) -> Double
 pub fn Fraction::floor_big(self) -> BigInt
 pub fn Fraction::ceil_big(self) -> BigInt

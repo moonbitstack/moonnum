@@ -64,6 +64,20 @@ Promotion follows the tower — integer, fraction, float, complex — and
 comparison is exact: `9007199254740993` is greater than `9007199254740992.0`,
 which a float-first comparison gets wrong.
 
+## Arithmetic
+
+| On | Functions |
+|:--|:--|
+| integers | `floordiv`, `floor_mod`, `divmod`, `power` (with `modulus~`), `gcd`, `lcm`, `isqrt`, `factorial`, `comb`, `perm`, `bit_length`, `to_bytes`, `of_bytes` |
+| floats | `round_float(d, ndigits~)`, `round_big`, `floor_big`, `ceil_big`, `trunc_big`, `as_ratio`, `as_integer_ratio` |
+| complex | `+ - *`, `Complex::divide`, `Complex::pow`, `abs`, `conjugate` |
+| fractions | `+ - *`, `Fraction::divide`, `Fraction::pow`, `compare`, `floor_big`, `ceil_big`, `round`, `round_big`, `to_double`, `limit_denominator` |
+| any of them | `Number::add`, `Number::sub`, `Number::mul`, `Number::divide`, `Number::pow`, `compare_numeric`, `equal_numeric` |
+
+`Fraction::pow` takes an integer exponent and stays a ratio — `(2/3) ** 100` is
+an exact numerator over an exact denominator — while `Number::pow` follows the
+tower and gives a float when an exponent is one.
+
 ## Reading
 
 | Function | Reads |
@@ -138,9 +152,8 @@ library that panics on zero is worse than one that says so.
 ## Documentation
 
 - [Tutorial](https://moonbitstack.github.io/moonnum/01-integers.html) — five
-  pages, one per kind plus formatting. Every block on them comes from the
-  example beside it, so the output printed there is the output the program
-  prints.
+  pages, one per kind plus formatting. Every output block on them was produced
+  by running the code above it, including the refusals.
 - [API reference](https://moonbitstack.github.io/moonnum/api.html) — every
   public item.
 - [Design notes](https://moonbitstack.github.io/moonnum/algorithms.html) — how
