@@ -94,7 +94,7 @@ which a float-first comparison gets wrong.
 @moonnum.format_int(255N, "#010_x")           // "0x000_00ff"
 @moonnum.format_float(0.25, ".2%")            // "25.00%"
 @moonnum.format_float(-0.0, "z")              // "0.0"
-@moonnum.format_complex(z, ".2f")             // "3.00+4.00j"
+z.format(".2f")                                // "3.00+4.00j"
 ```
 
 Types `b c d e E f F g G n o x X %` and no type at all; fill and alignment
@@ -138,7 +138,9 @@ library that panics on zero is worse than one that says so.
 ## Documentation
 
 - [Tutorial](https://moonbitstack.github.io/moonnum/01-integers.html) — five
-  pages, one per kind plus formatting, each runnable.
+  pages, one per kind plus formatting. Every block on them comes from the
+  example beside it, so the output printed there is the output the program
+  prints.
 - [API reference](https://moonbitstack.github.io/moonnum/api.html) — every
   public item.
 - [Design notes](https://moonbitstack.github.io/moonnum/algorithms.html) — how
