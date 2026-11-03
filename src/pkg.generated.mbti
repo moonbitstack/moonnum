@@ -84,6 +84,33 @@ pub fn Refused::to_string(Self) -> String
 pub impl Show for Refused
 
 // Types and methods
+pub struct BigFloat {
+  mantissa : @bigint.BigInt
+  bits : Int32
+}
+pub fn BigFloat::abs(Self) -> Self
+pub fn BigFloat::add(Self, Self) -> Self
+pub fn BigFloat::approx(Self, Self, Self) -> Bool
+pub fn BigFloat::bits_for_digits(Int32) -> Int32
+pub fn BigFloat::compare(Self, Self) -> Int32
+pub fn BigFloat::div(Self, Self) -> Self
+pub fn BigFloat::exp(Self) -> Self
+pub fn BigFloat::from_int(Int32, Int32) -> Self
+pub fn BigFloat::from_scaled(String, Int32, Int32) -> Self
+pub fn BigFloat::is_zero(Self) -> Bool
+pub fn BigFloat::le(Self, Self) -> Bool
+pub fn BigFloat::ln(Self) -> Self
+pub fn BigFloat::ln2(Int32) -> Self
+pub fn BigFloat::lt(Self, Self) -> Bool
+pub fn BigFloat::mul(Self, Self) -> Self
+pub fn BigFloat::neg(Self) -> Self
+pub fn BigFloat::one(Int32) -> Self
+pub fn BigFloat::pi(Int32) -> Self
+pub fn BigFloat::sqrt(Self) -> Self
+pub fn BigFloat::sub(Self, Self) -> Self
+pub fn BigFloat::to_double(Self) -> Double
+pub fn BigFloat::zero(Int32) -> Self
+
 pub(all) struct Complex {
   re : Double
   im : Double
