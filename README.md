@@ -64,6 +64,30 @@ Promotion follows the tower — integer, fraction, float, complex — and
 comparison is exact: `9007199254740993` is greater than `9007199254740992.0`,
 which a float-first comparison gets wrong.
 
+## A real with a width
+
+The four kinds above are exact where they can be and binary where they must be.
+There is a fifth type for the case in between — a real carried at a precision
+the caller chooses, for the series and the expansions that a double cannot
+finish:
+
+```moonbit
+let bits = @moonnum.BigFloat::bits_for_digits(50)
+let two = @moonnum.BigFloat::of_int(2, bits)
+two.sqrt().to_double()                       // 1.4142135623730951
+two.pow(@moonnum.BigFloat::of_scaled("5", 1, bits))   // 2^(1/2), at fifty digits
+```
+
+`BigFloat` is `mantissa / 2^bits`: fixed point, so the rounding of every step is
+one truncation and the whole computation carries one width. It has the four
+operations, `sqrt`, `exp`, `ln`, a real `pow`, `sin`, `cos`, `atan`, and
+`pi`/`ln2` to as many digits as the width holds. `of_scaled(digits, places)`
+seeds it from a decimal constant and `of_decimal` reads a literal.
+
+It is not one of the `Number` kinds, and that is deliberate: those are
+widthless, and an operation between two reals of different widths would have no
+rule for which width the answer keeps. A caller picks `bits` once and passes it.
+
 ## Arithmetic
 
 | On | Functions |
