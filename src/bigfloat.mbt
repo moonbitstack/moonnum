@@ -282,8 +282,11 @@ pub fn BigFloat::of_decimal(text : String, bits : Int32) -> BigFloat {
     if c == 'e' || c == 'E' {
       mantissa_end = probe
       let mut e = probe + 1
-      if e < length && text.get_char(e) == Some('-') {
-        exponent_negative = true
+      // Both signs are accepted: `Double::to_string` writes a positive exponent
+      // as `e+21`, and a literal read back from one has to survive the trip.
+      if e < length &&
+        (text.get_char(e) == Some('-') || text.get_char(e) == Some('+')) {
+        exponent_negative = text.get_char(e) == Some('-')
         e = e + 1
       }
       while e < length {

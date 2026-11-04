@@ -106,6 +106,11 @@ test "a decimal literal is read at the width it is asked for" {
   let tiny = BigFloat::of_decimal("1.5e-12", bits)
   assert_true(tiny.approx(BigFloat::of_scaled("15", 13, bits), tolerance))
   assert_true(BigFloat::of_decimal("-0.5", bits).to_double() == -0.5)
+  // A positive exponent too: `Double::to_string` writes one as `e+21`, and a
+  // round trip through a string is how a caller hands a double to this type.
+  assert_true(BigFloat::of_decimal("1.5e+3", bits).to_double() == 1500.0)
+  assert_true(BigFloat::of_decimal("2.5E+2", bits).to_double() == 250.0)
+  assert_true(BigFloat::of_decimal("-1e+2", bits).to_double() == -100.0)
 }
 
 ///|
