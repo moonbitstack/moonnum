@@ -41,6 +41,9 @@ GROUPS = [
     ("Complex numbers", "`Complex`, its arithmetic, and its repr.", [
         "parse_complex", "repr_complex", "Complex",
     ]),
+    ("Fixed point", "A real at a width the caller picks, with the transcendentals a width is for.", [
+        "parse_fixed", "Fixed",
+    ]),
     ("Fractions", "Exact rationals, kept in lowest terms.", [
         "parse_fraction", "repr_fraction", "Fraction",
     ]),
@@ -61,6 +64,7 @@ TRAIT_NOTES = {
     "Add": "+",
     "Sub": "-",
     "Mul": "*",
+    "Div": "/",
     "Neg": "unary -",
     "Eq": "== and !=",
     "Compare": "<, <=, >, >=",

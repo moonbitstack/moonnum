@@ -31,7 +31,7 @@
     Generated from the module interface, so nothing here is aspirational.
   </p>
 
-<nav class="jump"><a href="#integers">Integers</a><a href="#floats">Floats</a><a href="#complex-numbers">Complex numbers</a><a href="#fractions">Fractions</a><a href="#numbers">Numbers</a><a href="#formatting">Formatting</a><a href="#errors">Errors</a></nav>
+<nav class="jump"><a href="#integers">Integers</a><a href="#floats">Floats</a><a href="#complex-numbers">Complex numbers</a><a href="#fixed-point">Fixed point</a><a href="#fractions">Fractions</a><a href="#numbers">Numbers</a><a href="#formatting">Formatting</a><a href="#errors">Errors</a></nav>
 
 <section class="api-group" id="integers">
 <h2>Integers</h2>
@@ -196,6 +196,107 @@
 <p class="sig">pub fn <span class="name">Complex::pow</span>(Self, Self) -&gt; Self raise Refused</p>
 <div class="doc"><p><code>z ** w</code>, including Python&#x27;s special cases.</p>
 <p>An exponent that is a small integer is applied by repeated squaring, as CPython does; anything else goes through the polar form, which is why <code>(1+1j) ** 2</code> is exactly <code>2j</code> and <code>(1+1j) ** 2.0</code> is not.</p></div>
+</div>
+</section>
+
+<section class="api-group" id="fixed-point">
+<h2>Fixed point</h2>
+<p class="lede"><p>A real at a width the caller picks, with the transcendentals a width is for.</p></p>
+<div class="item">
+<p class="sig">pub fn <span class="name">parse_fixed</span>(StringView, Int32) -&gt; Fixed raise Refused</p>
+<div class="doc"><p>A decimal literal from outside: an optional sign, digits with an optional point, and an optional exponent. Anything else is refused with where it stopped.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fixed::abs</span>(Self) -&gt; Self</p>
+<div class="doc"><p>The absolute value.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fixed::approx</span>(Self, Self, Self) -&gt; Bool</p>
+<div class="doc"><p>Whether the two are within <code>tolerance</code> of each other.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fixed::at</span>(Self, Int32) -&gt; Self</p>
+<div class="doc"><p>The same value at another width: exact when it widens, truncated when it narrows.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fixed::atan</span>(Self) -&gt; Self</p>
+<div class="doc"><p>The arctangent, by halving the angle until the series converges and doubling the result back. <code>atan x = 2 atan (x / (1 + sqrt(1 + x^2)))</code> holds for every <code>x</code>, and each halving quarters the argument, so the Taylor series is reached after a handful of steps from anywhere.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fixed::bits_for_digits</span>(Int32) -&gt; Int32</p>
+<div class="doc"><p>The fractional bits for a requested count of decimal digits, with guard bits left for the truncation each operation drops.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fixed::cos</span>(Self) -&gt; Self</p>
+<div class="doc"><p>The cosine, by the same reduction and the Taylor series that starts at one.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fixed::digits_for_bits</span>(Int32) -&gt; Int32</p>
+<div class="doc"><p>The decimal digits a width can represent, guard bits included.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fixed::div</span>(Self, Self) -&gt; Self</p>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fixed::exp</span>(Self) -&gt; Self</p>
+<div class="doc"><p><code>e^x</code>, by range reduction to <code>-ln(2)/2 .. ln(2)/2</code> and a Taylor series.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fixed::is_zero</span>(Self) -&gt; Bool</p>
+<div class="doc"><p>Whether the value is exactly zero.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fixed::ln</span>(Self) -&gt; Self</p>
+<div class="doc"><p>The natural logarithm, by <code>ln(m) + k ln(2)</code> with <code>m</code> in <code>1..2</code> and the <code>atanh</code> series for <code>ln(m)</code>.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fixed::ln2</span>(Int32) -&gt; Self</p>
+<div class="doc"><p><code>ln(2)</code> at the given width, <code>2 atanh(1/3)</code> past the width of the constant.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fixed::of_decimal</span>(String, Int32) -&gt; Self</p>
+<div class="doc"><p>A decimal literal at the given width: <code>&quot;0.5772156649&quot;</code>, <code>&quot;-3.14&quot;</code>, <code>&quot;1e-40&quot;</code>.</p>
+<p>This is how a constant that is known to more digits than a double holds gets into a computation without a caller having to hand-count the places. The digits are read as an integer and divided by the matching power of ten once, so the only rounding is that single division. It is for constants a program carries; text from outside goes through <code>parse_fixed</code>.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fixed::of_int</span>(Int32, Int32) -&gt; Self</p>
+<div class="doc"><p>An integer at the given width.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fixed::of_scaled</span>(String, Int32, Int32) -&gt; Self</p>
+<div class="doc"><p><code>integer / 10^places</code> at the given width: how a decimal constant such as pi is seeded without a parser.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fixed::one</span>(Int32) -&gt; Self</p>
+<div class="doc"><p>One at the given width.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fixed::pi</span>(Int32) -&gt; Self</p>
+<div class="doc"><p>Pi at the given width, Machin&#x27;s formula past the width of the constant.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fixed::pow</span>(Self, Self) -&gt; Self</p>
+<div class="doc"><p><code>x^y</code>, through <code>exp(y ln x)</code>. The base must be positive: a fixed-point value has no branch for a negative base and a fractional exponent.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fixed::sin</span>(Self) -&gt; Self</p>
+<div class="doc"><p>The sine, by range reduction to <code>-pi .. pi</code> and the Taylor series.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fixed::sqrt</span>(Self) -&gt; Self</p>
+<div class="doc"><p>The square root, rounded down to the width.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fixed::to_decimal</span>(Self, Int32) -&gt; String</p>
+<div class="doc"><p>The value in decimal with <code>places</code> digits after the point, rounded half away from zero.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fixed::to_double</span>(Self) -&gt; Double</p>
+<div class="doc"><p>The value as a double, to the precision a double holds.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fixed::zero</span>(Int32) -&gt; Self</p>
+<div class="doc"><p>Zero at the given width.</p></div>
 </div>
 </section>
 

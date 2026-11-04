@@ -1,6 +1,6 @@
 name = "moonbitstack/moonnum"
 
-version = "0.2.2"
+version = "0.2.3"
 
 readme = "README.md"
 
@@ -15,6 +15,15 @@ keywords = [
   "bigint",
   "big-integer",
   "arbitrary-precision",
+  "fixed-point",
+  "bigfloat",
+  "decimal",
+  "transcendental",
+  "exp",
+  "ln",
+  "sqrt",
+  "pi",
+  "trigonometry",
   "integer",
   "float",
   "ieee754",

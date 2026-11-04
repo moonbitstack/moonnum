@@ -48,6 +48,8 @@ pub fn parse(StringView) -> Number raise Refused
 
 pub fn parse_complex(StringView) -> Complex raise Refused
 
+pub fn parse_fixed(StringView, Int32) -> Fixed raise Refused
+
 pub fn parse_float(StringView) -> Double raise Refused
 
 pub fn parse_fraction(StringView) -> Fraction raise Refused
@@ -84,39 +86,6 @@ pub fn Refused::to_string(Self) -> String
 pub impl Show for Refused
 
 // Types and methods
-pub struct BigFloat {
-  mantissa : @bigint.BigInt
-  bits : Int32
-}
-pub fn BigFloat::abs(Self) -> Self
-pub fn BigFloat::add(Self, Self) -> Self
-pub fn BigFloat::approx(Self, Self, Self) -> Bool
-pub fn BigFloat::atan(Self) -> Self
-pub fn BigFloat::bits_for_digits(Int32) -> Int32
-pub fn BigFloat::compare(Self, Self) -> Int32
-pub fn BigFloat::cos(Self) -> Self
-pub fn BigFloat::digits_for_bits(Int32) -> Int32
-pub fn BigFloat::div(Self, Self) -> Self
-pub fn BigFloat::exp(Self) -> Self
-pub fn BigFloat::is_zero(Self) -> Bool
-pub fn BigFloat::le(Self, Self) -> Bool
-pub fn BigFloat::ln(Self) -> Self
-pub fn BigFloat::ln2(Int32) -> Self
-pub fn BigFloat::lt(Self, Self) -> Bool
-pub fn BigFloat::mul(Self, Self) -> Self
-pub fn BigFloat::neg(Self) -> Self
-pub fn BigFloat::of_decimal(String, Int32) -> Self
-pub fn BigFloat::of_int(Int32, Int32) -> Self
-pub fn BigFloat::of_scaled(String, Int32, Int32) -> Self
-pub fn BigFloat::one(Int32) -> Self
-pub fn BigFloat::pi(Int32) -> Self
-pub fn BigFloat::pow(Self, Self) -> Self
-pub fn BigFloat::sin(Self) -> Self
-pub fn BigFloat::sqrt(Self) -> Self
-pub fn BigFloat::sub(Self, Self) -> Self
-pub fn BigFloat::to_double(Self) -> Double
-pub fn BigFloat::zero(Int32) -> Self
-
 pub(all) struct Complex {
   re : Double
   im : Double
@@ -144,6 +113,55 @@ pub impl Mul for Complex
 pub impl Neg for Complex
 pub impl Show for Complex
 pub impl Sub for Complex
+
+pub struct Fixed {
+  mantissa : @bigint.BigInt
+  bits : Int32
+}
+pub fn Fixed::abs(Self) -> Self
+pub fn Fixed::add(Self, Self) -> Self
+pub fn Fixed::approx(Self, Self, Self) -> Bool
+pub fn Fixed::at(Self, Int32) -> Self
+pub fn Fixed::atan(Self) -> Self
+pub fn Fixed::bits_for_digits(Int32) -> Int32
+pub fn Fixed::compare(Self, Self) -> Int32
+pub fn Fixed::cos(Self) -> Self
+pub fn Fixed::digits_for_bits(Int32) -> Int32
+pub fn Fixed::div(Self, Self) -> Self
+pub fn Fixed::equal(Self, Self) -> Bool
+pub fn Fixed::exp(Self) -> Self
+pub fn Fixed::is_zero(Self) -> Bool
+pub fn Fixed::ln(Self) -> Self
+pub fn Fixed::ln2(Int32) -> Self
+pub fn Fixed::mul(Self, Self) -> Self
+pub fn Fixed::neg(Self) -> Self
+pub fn Fixed::not_equal(Self, Self) -> Bool
+pub fn Fixed::of_decimal(String, Int32) -> Self
+pub fn Fixed::of_int(Int32, Int32) -> Self
+pub fn Fixed::of_scaled(String, Int32, Int32) -> Self
+pub fn Fixed::one(Int32) -> Self
+pub fn Fixed::op_ge(Self, Self) -> Bool
+pub fn Fixed::op_gt(Self, Self) -> Bool
+pub fn Fixed::op_le(Self, Self) -> Bool
+pub fn Fixed::op_lt(Self, Self) -> Bool
+pub fn Fixed::output(Self, &Logger) -> Unit
+pub fn Fixed::pi(Int32) -> Self
+pub fn Fixed::pow(Self, Self) -> Self
+pub fn Fixed::sin(Self) -> Self
+pub fn Fixed::sqrt(Self) -> Self
+pub fn Fixed::sub(Self, Self) -> Self
+pub fn Fixed::to_decimal(Self, Int32) -> String
+pub fn Fixed::to_double(Self) -> Double
+pub fn Fixed::to_string(Self) -> String
+pub fn Fixed::zero(Int32) -> Self
+pub impl Add for Fixed
+pub impl Compare for Fixed
+pub impl Div for Fixed
+pub impl Eq for Fixed
+pub impl Mul for Fixed
+pub impl Neg for Fixed
+pub impl Show for Fixed
+pub impl Sub for Fixed
 
 pub(all) struct Fraction {
   num : @bigint.BigInt

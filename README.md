@@ -72,21 +72,28 @@ the caller chooses, for the series and the expansions that a double cannot
 finish:
 
 ```moonbit
-let bits = @moonnum.BigFloat::bits_for_digits(50)
-let two = @moonnum.BigFloat::of_int(2, bits)
-two.sqrt().to_double()                       // 1.4142135623730951
-two.pow(@moonnum.BigFloat::of_scaled("5", 1, bits))   // 2^(1/2), at fifty digits
+let bits = @moonnum.Fixed::bits_for_digits(50)
+let two = @moonnum.Fixed::of_int(2, bits)
+two.sqrt().to_string()                       // 1.41421356237309504880168872420969807856967187537695
+two.sqrt() * two.sqrt() < two                // true: each step truncates
+(two * @moonnum.Fixed::pi(bits)).to_decimal(10)   // 6.2831853072
+@moonnum.parse_fixed("1e-3", bits) catch { _ => two }   // text from outside, refused with where it stopped
 ```
 
-`BigFloat` is `mantissa / 2^bits`: fixed point, so the rounding of every step is
-one truncation and the whole computation carries one width. It has the four
-operations, `sqrt`, `exp`, `ln`, a real `pow`, `sin`, `cos`, `atan`, and
-`pi`/`ln2` to as many digits as the width holds. `of_scaled(digits, places)`
-seeds it from a decimal constant and `of_decimal` reads a literal.
+`Fixed` is `mantissa / 2^bits`: fixed point, so the rounding of every step is one
+truncation and a whole computation carries one width. It has `+ - * /`, comparison,
+`sqrt`, `exp`, `ln`, a real `pow`, `sin`, `cos`, `atan`, and `pi`/`ln2` to as many
+digits as the width holds. An operation keeps the left operand's width and brings the
+right one to it; `at` changes a value's width. `of_scaled(digits, places)` seeds it
+from a decimal constant, `of_decimal` reads a literal a program carries, `parse_fixed`
+reads one from outside, and `to_decimal(places)` writes it back.
 
-It is not one of the `Number` kinds, and that is deliberate: those are
-widthless, and an operation between two reals of different widths would have no
-rule for which width the answer keeps. A caller picks `bits` once and passes it.
+A value outside an operation's domain, such as the square root of a negative number,
+stops the program with the reason, as an integer division by zero does: these are
+written with operators, which cannot raise.
+
+It is not one of the `Number` kinds, and that is deliberate: those are widthless, and
+a value here is only as good as the width a caller chose for it.
 
 ## Arithmetic
 
