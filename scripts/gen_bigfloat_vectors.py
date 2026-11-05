@@ -243,6 +243,95 @@ DOMAIN = [
 ]
 
 
+COMPLEX_FUNCTIONS = {
+    "exp": mp.exp,
+    "ln": mp.log,
+    "sqrt": mp.sqrt,
+    "sin": mp.sin,
+    "cos": mp.cos,
+    "tan": mp.tan,
+    "asin": mp.asin,
+    "acos": mp.acos,
+    "atan": mp.atan,
+    "sinh": mp.sinh,
+    "cosh": mp.cosh,
+    "tanh": mp.tanh,
+    "asinh": mp.asinh,
+    "acosh": mp.acosh,
+    "atanh": mp.atanh,
+}
+
+# Points chosen so that every branch is crossed at least once: the negative real
+# axis is the cut of the logarithm and the square root, the real axis outside
+# [-1, 1] is the cut of the inverse circular and hyperbolic ones, and the
+# imaginary axis outside [-j, j] is the cut of the arctangent. A point with an
+# imaginary part has none of them.
+COMPLEX_POINTS = [
+    ("1", "1"), ("-1", "1"), ("2", "0"), ("-2", "0"), ("0.5", "0"),
+    ("-0.5", "0"), ("0", "2"), ("0", "-2"), ("3", "-4"), ("1", "100"),
+    ("-0.75", "0.25"), ("1e-10", "1e-10"),
+]
+
+COMPLEX_PAIRS = [
+    ("1", "2", "3", "-4"),
+    ("-0.1", "0.5", "0.2", "-0.25"),
+    ("1e10", "-1e-10", "3", "4"),
+    ("0.75", "-0.125", "-2", "0.5"),
+]
+
+COMPLEX_OPS = {
+    "add": lambda a, b: a + b,
+    "sub": lambda a, b: a - b,
+    "mul": lambda a, b: a * b,
+    "div": lambda a, b: a / b,
+}
+
+BC_DOMAIN = [
+    ("divide", "1", "0", "!div0"),
+    ("pow", "0", "-1", "!div0"),
+    ("pow", "0", "-0.5", "!div0"),
+]
+
+
+def complex_point(re_text: str, im_text: str, width: int):
+    """A point at the width under test, both parts unrounded by the reading."""
+    return mp.mpc(
+        narrow(mp.mpf(re_text), width),
+        narrow(mp.mpf(im_text), width),
+    )
+
+
+def rows_bc_function(name: str, width: int) -> list[str]:
+    lines = []
+    for re_text, im_text in COMPLEX_POINTS:
+        point = complex_point(re_text, im_text, width)
+        with mp.workprec(width + 64):
+            answer = COMPLEX_FUNCTIONS[name](point)
+        # A point where the function is not finite (the logarithm of zero, the
+        # arctangent of one) is not a comparison of digits: those live in the
+        # hand-written tests, which state what the infinity is.
+        if not (mp.isfinite(answer.real) and mp.isfinite(answer.imag)):
+            continue
+        lines.append("    (%s, %s, %s, %s)," % (
+            esc(re_text), esc(im_text),
+            esc(exact_decimal(answer.real)), esc(exact_decimal(answer.imag)),
+        ))
+    return lines
+
+
+def rows_bc_operation(name: str, width: int) -> list[str]:
+    lines = []
+    for a_re, a_im, b_re, b_im in COMPLEX_PAIRS:
+        a = complex_point(a_re, a_im, width)
+        b = complex_point(b_re, b_im, width)
+        answer = at(width, NEAREST, lambda: COMPLEX_OPS[name](a, b))
+        lines.append("    (%s, %s, %s, %s, %s, %s)," % (
+            esc(a_re), esc(a_im), esc(b_re), esc(b_im),
+            esc(exact_decimal(answer.real)), esc(exact_decimal(answer.imag)),
+        ))
+    return lines
+
+
 def rows_transcendental(name: str, width: int) -> list[str]:
     lines = []
     for argument in TRANSCENDENTAL[name]:
@@ -348,6 +437,21 @@ def main() -> int:
               "check_bf_decimal(%d, [" % width, rows_decimal(width))
         block("vec_bf_whole at %d bits: 1 of 1" % width,
               "check_bf_whole(%d, [" % width, rows_whole(width))
+
+    for width in WIDTHS:
+        for name in COMPLEX_FUNCTIONS:
+            block("vec_bc_%s at %d bits: 1 of 1" % (name, width),
+                  "check_bc_function(%s, %d, [" % (esc(name), width),
+                  rows_bc_function(name, width))
+        for name in COMPLEX_OPS:
+            block("vec_bc_%s at %d bits: 1 of 1" % (name, width),
+                  "check_bc_operation(%s, %d, [" % (esc(name), width),
+                  rows_bc_operation(name, width))
+
+    block("vec_bc_domain: 1 of 1", "check_bc_domain([", [
+        "    (%s, %s, %s, %s)," % (esc(a), esc(b), esc(c), esc(d))
+        for a, b, c, d in BC_DOMAIN
+    ])
 
     block("vec_bf_domain: 1 of 1", "check_bf_domain([", [
         "    (%s, %s, %s, %s)," % (esc(a), esc(b), esc(c), esc(d))
