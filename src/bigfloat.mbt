@@ -61,6 +61,27 @@ pub(all) enum Rounding {
 pub extend Rounding with Eq::{not_equal, equal}
 
 ///|
+/// The direction by the name the reference gives it, so a printed context reads
+/// the way the documentation writes it.
+pub impl Show for Rounding with fn to_string(self) {
+  match self {
+    Nearest => "nearest"
+    Floor => "floor"
+    Ceiling => "ceiling"
+    Down => "down"
+    Up => "up"
+  }
+}
+
+///|
+pub impl Show for Rounding with fn output(self, logger) {
+  logger.write_string(self.to_string())
+}
+
+///|
+pub extend Rounding with Show::{to_string, output}
+
+///|
 /// A width in bits and the direction a result that does not fit is rounded in.
 ///
 /// The two travel together because a rounding mode without a width has nothing
@@ -711,6 +732,8 @@ pub impl Mul for BigFloat with fn mul(self, other) {
 }
 
 ///|
+/// The quotient, answering `±inf` and `nan` where the divisor is zero: the
+/// operator cannot raise, so it says what the standard says.
 pub impl Div for BigFloat with fn div(self, other) {
   quotient(self, other, inherited(self, other))
 }

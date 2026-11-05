@@ -345,6 +345,9 @@ pub(all) enum Rounding {
 }
 pub fn Rounding::equal(Self, Self) -> Bool
 pub fn Rounding::not_equal(Self, Self) -> Bool
+pub fn Rounding::output(Self, &Logger) -> Unit
+pub fn Rounding::to_string(Self) -> String
+pub impl Show for Rounding
 
 // Type aliases
 
