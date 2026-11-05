@@ -182,7 +182,40 @@ a.compare_numeric(b)</code></pre>
     that implies.
   </p>
 
-  <h3>Six, what is deliberately not here</h3>
+  <h3>Six, where a series stops</h3>
+  <p>
+    A <code>BigFloat</code> gets its transcendental functions from series, and
+    every one of them is carried in the same arithmetic the caller sees rather
+    than in integers scaled by a power of two. That is not a stylistic choice.
+    A scaled integer sits on a grid that is absolute: at a thousand fractional
+    bits, <code>ln(1 + 2^-900)</code> keeps a hundred of the nine hundred digits
+    it is worth. A <code>BigFloat</code> keeps its width wherever it sits on the
+    line, so the same value keeps all of them.
+  </p>
+  <p>
+    The two reductions that make the series cheap are the same idea twice. For
+    the logarithm, halve the argument through
+    <code>sqrt(1 + u) - 1 = u / (sqrt(1 + u) + 1)</code>, which never subtracts
+    two nearby numbers and so never loses the digits that cancel; three halvings
+    take the series from three bits a term to ten. For the exponential, halve the
+    argument until the series needs a few hundred terms and square the answer
+    back — each squaring doubles the error behind it, so the halvings are paid
+    for in guard bits, which is a cheaper trade than carrying <code>ln 2</code>
+    into every exponential.
+  </p>
+  <p>
+    A series stops when its next term is below the last place of the running sum,
+    which is a comparison of two exponents and not a count of terms. That is what
+    makes the same code answer at fifty bits and at thirty-three hundred.
+  </p>
+  <p>
+    <code>sqrt</code> is the exception: it is not a series but an integer square
+    root of the significand, with the remainder kept as a sticky bit. That is why
+    it is correctly rounded in every direction while the series are faithful to
+    within a few ulps and no better.
+  </p>
+
+  <h3>Seven, what is deliberately not here</h3>
   <p>
     Three edges are out of scope, and each is a decision rather than an
     oversight:
@@ -206,7 +239,7 @@ a.compare_numeric(b)</code></pre>
   </ul>
 
   <nav class="pager">
-    <a href="05-format.html">← Five: Formatting</a>
+    <a href="06-bigfloat.html">← Six: A real of any width</a>
     <a class="next" href="api.html">API reference →</a>
   </nav>
 </article>

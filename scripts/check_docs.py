@@ -42,6 +42,7 @@ TUTORIALS = {
     "03-complex.html": "src/examples/03-complex",
     "04-fractions.html": "src/examples/04-fractions",
     "05-format.html": "src/examples/05-format",
+    "06-bigfloat.html": "src/examples/06-bigfloat",
 }
 
 NUMBER = re.compile(r"-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?")
@@ -55,7 +56,9 @@ def public_names() -> set[str]:
         name = match.group(1)
         names.add(name)
         names.add(name.split("::")[-1])
-    for match in re.finditer(r"^pub\(all\) (?:struct|enum|suberror) (\w+)", text, re.M):
+    # A type whose fields are private is still a name a caller writes.
+    for match in re.finditer(
+            r"^pub(?:\(all\))? (?:struct|enum|suberror) (\w+)", text, re.M):
         names.add(match.group(1))
     # A suberror's cases are named by the caller in a `catch` pattern:
     # `@moonnum.ZeroDivision => ...`, so they count as public names too.

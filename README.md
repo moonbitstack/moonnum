@@ -5,8 +5,8 @@
 **Numbers in MoonBit that behave the way you expect them to.**
 
 Arbitrary-precision integers, IEEE-754 floats with honest text, complex
-numbers written `3+4j`, and exact fractions — one package, one error type, one
-formatting language.
+numbers written `3+4j`, exact fractions, and a real carried to any width —
+one package, one error type, one formatting language.
 
 </div>
 
@@ -95,6 +95,55 @@ written with operators, which cannot raise.
 It is not one of the `Number` kinds, and that is deliberate: those are widthless, and
 a value here is only as good as the width a caller chose for it.
 
+## A real carried to any width
+
+The four kinds are widthless: an integer has as many digits as it needs, a float
+has exactly fifty-three, a fraction is exact or is not. `BigFloat` is the case in
+between — `mantissa * 2^exponent`, with the width the value was rounded to kept
+beside it, so every value keeps the same count of digits wherever it sits on the
+line.
+
+```moonbit
+let c = @moonnum.Context::new(200)
+let two = @moonnum.BigFloat::of_int(2, context=c)
+
+two.sqrt(context=c).to_significant(60)      // 1.41421356237309504880168872420969807856967187537694807317668
+@moonnum.BigFloat::pi(context=c).to_significant(60)
+                                            // 3.14159265358979323846264338327950288419716939937510582097494
+two.pow(@moonnum.BigFloat::of_double(0.5), context=c)   // the same as sqrt
+```
+
+An operator keeps the wider of its two operands and rounds to nearest even:
+the answer is as good as what went into it and no better. A `Context` is a width
+and a direction together, and the five directions are the ones `mpmath` names —
+nearest even, floor, ceiling, toward zero, away from zero.
+
+```moonbit
+@moonnum.Rounding::Nearest     // ties to the even digit
+@moonnum.Rounding::Floor       // toward minus infinity
+@moonnum.Rounding::Ceiling     // toward plus infinity
+@moonnum.Rounding::Down        // toward zero
+@moonnum.Rounding::Up          // away from zero
+
+let flinch = @moonnum.Context::new(53, rounding=@moonnum.Rounding::Up)
+flinch.add(@moonnum.BigFloat::one(), @moonnum.BigFloat::parse("1e-100"))   // 1.0000000000000002
+```
+
+`sqrt`, `exp`, `ln`, `pow`, the circular and the hyperbolic functions are all
+there, computed at the width asked for from series and formulas — `pi` is
+Machin's, `ln 2` is two arctangents of a third, `e` is the exponential of one.
+Nothing in the source is a table of digits that could go stale, and a thousand
+digits costs a few thousand terms and nothing else.
+
+`Kind` is what a value is: `Finite`, `PositiveInfinity`, `NegativeInfinity`,
+`NotANumber`. A square root of a negative, a logarithm of a negative and a
+quotient of zero by zero answer the NaN; a quotient by zero answers an infinity,
+and `divide` is the same quotient for a caller who would rather be told.
+
+A value goes into and out of the other shapes the library already has —
+`@bigint.BigInt`, `Fixed`, `Double`, decimal text — and a double makes the round
+trip unchanged, since every finite double is a binary fraction already.
+
 ## Arithmetic
 
 | On | Functions |
@@ -104,6 +153,7 @@ a value here is only as good as the width a caller chose for it.
 | complex | `+ - *`, `Complex::divide`, `Complex::pow`, `abs`, `conjugate` |
 | fractions | `+ - *`, `Fraction::divide`, `Fraction::pow`, `compare`, `floor_big`, `ceil_big`, `round`, `round_big`, `to_double`, `limit_denominator` |
 | any of them | `Number::add`, `Number::sub`, `Number::mul`, `Number::divide`, `Number::pow`, `compare_numeric`, `equal_numeric` |
+| `BigFloat` | `+ - * /`, `divide`, `abs`, `sqrt`, `exp`, `ln`, `pow`, `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `sinh`, `cosh`, `tanh`, `asinh`, `acosh`, `atanh`, `round`, `pi`, `e`, `ln2` |
 
 `Fraction::pow` takes an integer exponent and stays a ratio — `(2/3) ** 100` is
 an exact numerator over an exact denominator — while `Number::pow` follows the
@@ -118,6 +168,7 @@ tower and gives a float when an exponent is one.
 | `parse_complex(text)` | `complex(s)`: `1+2j`, `(1+2j)`, `j`, `-j`, `1e3j` — and `3+5i` |
 | `parse_fraction(text)` | `Fraction(s)`: `3/4`, `-1.25`, `1e-3`, `7` |
 | `parse(text)` | a `Number` of whichever kind the literal spells |
+| `BigFloat::parse(text, context?)` | a decimal at a width: `inf`, `infinity`, `nan`, exponents, underscores, surrounding whitespace |
 
 ## Writing
 
@@ -127,6 +178,8 @@ tower and gives a float when an exponent is one.
 | `float_hex(d)` / `float_of_hex(s)` | the exact hexadecimal form, and back |
 | `repr_complex(z)`, `repr_fraction(f)` | `(1+2j)`, `2j`, `Fraction(3, 4)` |
 | `format(value, spec)` | the format-specification mini-language, for any kind |
+| `to_string` | the fewest digits that read back at the value's width, as a double's `repr` does |
+| `to_decimal(places)`, `to_significant(digits)` | an exact count of places, or of significant digits |
 
 ### The format language
 
@@ -179,12 +232,16 @@ library that panics on zero is worse than one that says so.
   that is a different problem.
 - **Not a bignum encoding.** Variable-length integer encodings live elsewhere.
 - **Not complex math.** `cmath`'s functions are out until something needs them.
+- **Not a fifth kind in `Number`.** The tower's kinds are widthless, and a
+  `BigFloat` is only as good as the width it carries, so it stands beside the
+  tower rather than in it.
 
 ## Documentation
 
-- [Tutorial](https://moonbitstack.github.io/moonnum/01-integers.html) — five
-  pages, one per kind plus formatting. Every output block on them was produced
-  by running the code above it, including the refusals.
+- [Tutorial](https://moonbitstack.github.io/moonnum/01-integers.html) — six
+  pages, one per kind plus formatting and the real of any width. Every output
+  block on them was produced by running the code above it, including the
+  refusals.
 - [API reference](https://moonbitstack.github.io/moonnum/api.html) — every
   public item.
 - [Design notes](https://moonbitstack.github.io/moonnum/algorithms.html) — how

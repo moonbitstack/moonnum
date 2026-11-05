@@ -31,7 +31,7 @@
     Generated from the module interface, so nothing here is aspirational.
   </p>
 
-<nav class="jump"><a href="#integers">Integers</a><a href="#floats">Floats</a><a href="#complex-numbers">Complex numbers</a><a href="#fixed-point">Fixed point</a><a href="#fractions">Fractions</a><a href="#numbers">Numbers</a><a href="#formatting">Formatting</a><a href="#errors">Errors</a></nav>
+<nav class="jump"><a href="#integers">Integers</a><a href="#floats">Floats</a><a href="#complex-numbers">Complex numbers</a><a href="#fixed-point">Fixed point</a><a href="#binary-floats">Binary floats</a><a href="#fractions">Fractions</a><a href="#numbers">Numbers</a><a href="#formatting">Formatting</a><a href="#errors">Errors</a></nav>
 
 <section class="api-group" id="integers">
 <h2>Integers</h2>
@@ -162,7 +162,9 @@
 </div>
 <div class="item">
 <p class="sig">pub(all) struct <span class="name">Complex</span> {
-  re : Double</p>
+  re : Double
+  im : Double
+}</p>
 <div class="doc"><p>A complex number: <code>z.re + z.im * j</code>.</p>
 <p>Adds, subtracts, multiplies, negates and compares with <code>==</code>; division is <code>Complex::divide</code> because it can refuse a zero divisor.</p></div>
 <p class="traits">Implements <code>Add</code> (<code>+</code>) · <code>Default</code> (<code>default()</code>) · <code>Eq</code> (<code>== and !=</code>) · <code>Mul</code> (<code>*</code>) · <code>Neg</code> (<code>unary -</code>) · <code>Show</code> (<code>to_string()</code>) · <code>Sub</code> (<code>-</code>) — the methods they promote are public on <code>Complex</code>.</p>
@@ -207,6 +209,16 @@
 <div class="doc"><p>A decimal literal from outside: an optional sign, digits with an optional point, and an optional exponent. Anything else is refused with where it stopped.</p></div>
 </div>
 <div class="item">
+<p class="sig">pub struct <span class="name">Fixed</span> {
+  mantissa : @bigint.BigInt
+  bits : Int32
+}</p>
+<div class="doc"><p>A real number carried as <code>mantissa / 2^bits</code>.</p>
+<p><code>bits</code> is the number of fractional bits, so the value has about <code>bits * 0.301</code> decimal digits after the point. An operation keeps the left operand&#x27;s width and brings the right one to it, so two widths give the answer the left width can hold rather than a wrong one.</p>
+<p>A value outside an operation&#x27;s domain, such as the square root of a negative number, stops the program with the reason, as a division of integers by zero does: these operations are written with <code>+</code> and <code>*</code> and cannot raise. Text from outside goes through <code>parse_fixed</code>, which does.</p></div>
+<p class="traits">Implements <code>Add</code> (<code>+</code>) · <code>Compare</code> (<code>&lt;, &lt;=, &gt;, &gt;=</code>) · <code>Div</code> (<code>/</code>) · <code>Eq</code> (<code>== and !=</code>) · <code>Mul</code> (<code>*</code>) · <code>Neg</code> (<code>unary -</code>) · <code>Show</code> (<code>to_string()</code>) · <code>Sub</code> (<code>-</code>) — the methods they promote are public on <code>Fixed</code>.</p>
+</div>
+<div class="item">
 <p class="sig">pub fn <span class="name">Fixed::abs</span>(Self) -&gt; Self</p>
 <div class="doc"><p>The absolute value.</p></div>
 </div>
@@ -236,6 +248,7 @@
 </div>
 <div class="item">
 <p class="sig">pub fn <span class="name">Fixed::div</span>(Self, Self) -&gt; Self</p>
+<div class="doc"><p>Truncated to the left width. A zero divisor stops the program, as it does for the integers underneath.</p></div>
 </div>
 <div class="item">
 <p class="sig">pub fn <span class="name">Fixed::exp</span>(Self) -&gt; Self</p>
@@ -300,6 +313,258 @@
 </div>
 </section>
 
+<section class="api-group" id="binary-floats">
+<h2>Binary floats</h2>
+<p class="lede"><p>A real carried to a width the caller picks: the significand as wide as it needs, an exponent of its own, and a direction for the bits that do not fit.</p></p>
+<div class="item">
+<p class="sig">pub struct <span class="name">BigFloat</span> {
+  kind : Kind
+  mantissa : @bigint.BigInt
+  exponent : Int32
+  precision : Int32
+}</p>
+<div class="doc"><p>A real number carried to a precision of its own.</p>
+<p>The value is <code>mantissa * 2^exponent</code> while it is finite, with the significand an integer of no more bits than <code>precision</code> says. The exponent is binary because the arithmetic underneath is binary: multiplying by ten would round where multiplying by two does not.</p>
+<p>Every operation rounds its result to a width — the wider of its operands, or the one a <code>Context</code> names — and keeps that width on the answer, so the next operation inherits it without the caller having to repeat it.</p></div>
+<p class="traits">Implements <code>Add</code> (<code>+</code>) · <code>Compare</code> (<code>&lt;, &lt;=, &gt;, &gt;=</code>) · <code>Default</code> (<code>default()</code>) · <code>Div</code> (<code>/</code>) · <code>Eq</code> (<code>== and !=</code>) · <code>Mul</code> (<code>*</code>) · <code>Neg</code> (<code>unary -</code>) · <code>Show</code> (<code>to_string()</code>) · <code>Sub</code> (<code>-</code>) — the methods they promote are public on <code>BigFloat</code>.</p>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::abs</span>(Self) -&gt; Self</p>
+<div class="doc"><p>The absolute value, at the same width.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::acos</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p>The arccosine, as a quarter turn less the arcsine.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::acosh</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p>The inverse hyperbolic cosine, as <code>asinh(sqrt(x^2 - 1))</code>, which is real from one upwards and holds its digits there where <code>ln(x + sqrt(x^2 - 1))</code> would not.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::asin</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p>The arcsine, through <code>atan(x / sqrt(1 - x^2))</code>, which is real only inside the unit interval.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::asinh</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p>The inverse hyperbolic sine, as <code>ln(1 + u)</code> with <code>u = x + x^2 / (sqrt(1 + x^2) + 1)</code>.</p>
+<p>The <code>1 +</code> that would swallow a small argument never gets formed: the rational form of the square root keeps the small part, and <code>ln_one_plus</code> is the logarithm that can take it.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::atan</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p>The arctangent, at the context&#x27;s width and direction.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::atanh</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p>The inverse hyperbolic tangent, as half the log of <code>(1 + x) / (1 - x)</code>.</p>
+<p>At one the answer is unbounded and the two infinities are the answer; past it there is no real value.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::cos</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p>The cosine, at the context&#x27;s width and direction.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::cosh</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p>The hyperbolic cosine, at the context&#x27;s width and direction.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::div</span>(Self, Self) -&gt; Self</p>
+<div class="doc"><p>The quotient, answering <code>±inf</code> and <code>nan</code> where the divisor is zero: the operator cannot raise, so it says what the standard says.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::divide</span>(Self, Self, context? : Context) -&gt; Self raise Refused</p>
+<div class="doc"><p>The quotient, raising <code>ZeroDivision</code> instead of answering an infinity.</p>
+<p>The operator cannot raise, so it answers <code>±inf</code> and <code>nan</code> the way IEEE 754 does; a caller who would rather be told calls this.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::e</span>(context? : Context) -&gt; Self</p>
+<div class="doc"><p><code>e</code> at the width and rounding of <code>context</code>, as <code>exp(1)</code> — not a table.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::exp</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p>The exponential at the context&#x27;s width and direction.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::infinity</span>() -&gt; Self</p>
+<div class="doc"><p>Past every number the exponent can name, above zero.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::is_finite</span>(Self) -&gt; Bool</p>
+<div class="doc"><p>Whether the value is a number.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::is_infinite</span>(Self) -&gt; Bool</p>
+<div class="doc"><p>Whether the value is past every number the exponent can name.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::is_nan</span>(Self) -&gt; Bool</p>
+<div class="doc"><p>Whether the value is the answer to a question with none.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::is_zero</span>(Self) -&gt; Bool</p>
+<div class="doc"><p>Whether the value is zero. A zero is a number; an infinity is not one.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::kind</span>(Self) -&gt; Kind</p>
+<div class="doc"><p>The kind of value this is.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::ln</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p>The logarithm at the context&#x27;s width and direction.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::ln2</span>(context? : Context) -&gt; Self</p>
+<div class="doc"><p><code>ln(2)</code> at the width and rounding of <code>context</code>.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::nan</span>() -&gt; Self</p>
+<div class="doc"><p>Not a number.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::negative_infinity</span>() -&gt; Self</p>
+<div class="doc"><p>The same, below zero.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::of_bigint</span>(@bigint.BigInt, context? : Context) -&gt; Self</p>
+<div class="doc"><p>An arbitrary-precision integer as a value, rounded when the context is narrower than the integer.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::of_double</span>(Double) -&gt; Self</p>
+<div class="doc"><p>A double as a value, exactly.</p>
+<p>Every finite double is a binary fraction, so this is not a round trip through text and loses nothing: the significand and the exponent of the double are the significand and the exponent of the <code>BigFloat</code>, at 53 bits.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::of_fixed</span>(Fixed, context? : Context) -&gt; Self</p>
+<div class="doc"><p>A fixed-point value as a value, exactly when the width allows and rounded half to even when it does not.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::of_int</span>(Int32, context? : Context) -&gt; Self</p>
+<div class="doc"><p>An integer as a value, rounded when the context is narrower than the integer.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::one</span>(context? : Context) -&gt; Self</p>
+<div class="doc"><p>The number one.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::parse</span>(StringView, context? : Context) -&gt; Self raise Refused</p>
+<div class="doc"><p>A decimal from outside, rounded once at the end to <code>context</code>&#x27;s width and direction.</p>
+<p>Reads what <code>float()</code> reads: an optional sign, digits with an optional point and exponent, a single underscore between digits, surrounding whitespace, and <code>inf</code>, <code>infinity</code> and <code>nan</code> in any case. A decimal exponent past a hundred thousand is refused rather than answered with a zero or an infinity that was not written.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::pi</span>(context? : Context) -&gt; Self</p>
+<div class="doc"><p><code>pi</code> at the width and rounding of <code>context</code>.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::pow</span>(Self, Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p><code>base</code> raised to <code>exponent</code>, at the context&#x27;s width and direction.</p>
+<p>A negative base with a fractional exponent has no real value and answers NaN, as does anything that would need the logarithm of a negative number.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::precision</span>(Self) -&gt; Int32</p>
+<div class="doc"><p>The width the value was rounded to, in bits.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::round</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p>The value at another width and rounding, which is what <code>Context</code> is for at the point where a caller wants to fix a width once and pass values through it.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::sign</span>(Self) -&gt; Int32</p>
+<div class="doc"><p><code>-1</code>, <code>0</code> or <code>1</code>: the sign of the value, and <code>0</code> where there is no sign to give, as for a NaN.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::sin</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p>The sine, at the context&#x27;s width and direction.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::sinh</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p>The hyperbolic sine, at the context&#x27;s width and direction.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::sqrt</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p>The square root, rounded at the context&#x27;s width and direction.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::tan</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p>The tangent, as the sine over the cosine.</p>
+<p>A remainder at a quarter turn gives a cosine of zero and so an infinity, which is what the tangent of a quarter turn is.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::tanh</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p>The hyperbolic tangent, as the sine over the cosine.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::to_bigint</span>(Self, rounding? : Rounding) -&gt; @bigint.BigInt raise Refused</p>
+<div class="doc"><p>The value rounded to an integer, <code>Nearest</code> being ties to even.</p>
+<p>An infinity and a NaN have no integer, and saying so is the point: a caller handed zero instead would not know it had not been given one.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::to_decimal</span>(Self, Int32) -&gt; String</p>
+<div class="doc"><p>This is the spelling for a table or a printed constant, so the count is a promise rather than a maximum: <code>to_decimal(2)</code> of one half is <code>0.50</code>.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::to_double</span>(Self) -&gt; Double</p>
+<div class="doc"><p>The nearest double, ties to even.</p>
+<p>A value above the largest double is an infinity and one below the smallest is a zero, which is what the host does with the same value; inside that range the answer is the correctly rounded double of the exact value.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::to_fixed</span>(Self, Int32) -&gt; Fixed raise Refused</p>
+<div class="doc"><p>The value as a fixed-point number with <code>bits</code> fractional bits, rounded half to even on the exact value.</p>
+<p>The width is the caller&#x27;s because a <code>Fixed</code> has no precision of its own: the count of fractional bits decides how finely it can sit, and a value far from one needs more of them for the same count of digits.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::to_significant</span>(Self, Int32) -&gt; String</p>
+<div class="doc"><p>The value with <code>digits</code> significant decimal digits, trailing zeros dropped and the point placed where the plain form keeps it.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::zero</span>(context? : Context) -&gt; Self</p>
+<div class="doc"><p>The number zero.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub struct <span class="name">Context</span> {
+  precision : Int32
+  rounding : Rounding
+}</p>
+<div class="doc"><p>A width in bits and the direction a result that does not fit is rounded in.</p>
+<p>The two travel together because a rounding mode without a width has nothing to round, and a width without a mode leaves the last bit to chance.</p></div>
+
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Context::div</span>(Self, BigFloat, BigFloat) -&gt; BigFloat</p>
+<div class="doc"><p>The quotient of <code>a</code> and <code>b</code> at this width and rounding, answering <code>±inf</code> and <code>nan</code> where that is the answer.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Context::divide</span>(Self, BigFloat, BigFloat) -&gt; BigFloat raise Refused</p>
+<div class="doc"><p>The quotient of <code>a</code> and <code>b</code>, raising <code>ZeroDivision</code> for a zero divisor.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Context::new</span>(Int32, rounding? : Rounding) -&gt; Self</p>
+<div class="doc"><p>A context of <code>precision</code> bits, rounding to nearest even unless told otherwise.</p>
+<p>A width below one is raised to one: a significand of no bits holds nothing but zero, and silently answering zero for every operation is worse than answering the one bit that was asked for.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub(all) enum <span class="name">Kind</span> {
+  Finite
+  PositiveInfinity
+  NegativeInfinity
+  NotANumber
+}</p>
+<div class="doc"><p>What a <code>BigFloat</code> is.</p>
+<p>A caller who matches on this has seen every value the type can hold, which is the reason it is one enum and not three predicates.</p></div>
+
+</div>
+<div class="item">
+<p class="sig">pub(all) enum <span class="name">Rounding</span> {
+  Nearest
+  Floor
+  Ceiling
+  Down
+  Up
+}</p>
+<div class="doc"><p>How a result that does not fit the width it is rounded to is rounded.</p>
+<p>The five are the reference&#x27;s <code>n</code>, <code>f</code>, <code>c</code>, <code>d</code> and <code>u</code>. <code>Nearest</code> breaks a tie toward the even digit, so a sequence of roundings does not drift upward the way ties-away-from-zero does.</p></div>
+
+</div>
+</section>
+
 <section class="api-group" id="fractions">
 <h2>Fractions</h2>
 <p class="lede"><p>Exact rationals, kept in lowest terms.</p></p>
@@ -314,7 +579,9 @@
 </div>
 <div class="item">
 <p class="sig">pub(all) struct <span class="name">Fraction</span> {
-  num : @bigint.BigInt</p>
+  num : @bigint.BigInt
+  den : @bigint.BigInt
+}</p>
 <div class="doc"><p>A rational number. <code>den</code> is always positive and <code>gcd(num, den)</code> is always 1, so <code>num</code> and <code>den</code> can be read directly.</p>
 <p>Adds, subtracts, multiplies, negates, compares with <code>==</code> and an ordering; division is <code>Fraction::divide</code> because it can refuse a zero divisor.</p></div>
 <p class="traits">Implements <code>Add</code> (<code>+</code>) · <code>Compare</code> (<code>&lt;, &lt;=, &gt;, &gt;=</code>) · <code>Default</code> (<code>default()</code>) · <code>Eq</code> (<code>== and !=</code>) · <code>Mul</code> (<code>*</code>) · <code>Neg</code> (<code>unary -</code>) · <code>Show</code> (<code>to_string()</code>) · <code>Sub</code> (<code>-</code>) — the methods they promote are public on <code>Fraction</code>.</p>
@@ -409,7 +676,11 @@
 </div>
 <div class="item">
 <p class="sig">pub(all) enum <span class="name">Number</span> {
-  Int(@bigint.BigInt)</p>
+  Int(@bigint.BigInt)
+  Float(Double)
+  Fraction(Fraction)
+  Complex(Complex)
+}</p>
 <div class="doc"><p>A number of any kind, as the tower arranges them.</p>
 <p>Promotion goes <code>Int</code> → <code>Fraction</code> → <code>Float</code> → <code>Complex</code>. Comparison is exact across the tower: an integer is never rounded to a float to be compared with one.</p></div>
 <p class="traits">Implements <code>Add</code> (<code>+</code>) · <code>Eq</code> (<code>== and !=</code>) · <code>Mul</code> (<code>*</code>) · <code>Neg</code> (<code>unary -</code>) · <code>Show</code> (<code>to_string()</code>) · <code>Sub</code> (<code>-</code>) — the methods they promote are public on <code>Number</code>.</p>
@@ -467,7 +738,11 @@
 <p class="lede"><p>One type, four cases.</p></p>
 <div class="item">
 <p class="sig">pub(all) suberror <span class="name">Refused</span> {
-  Malformed(at~ : Int32, reason~ : String)</p>
+  Malformed(at~ : Int32, reason~ : String)
+  ZeroDivision
+  Overflow(reason~ : String)
+  Domain(reason~ : String)
+}</p>
 <div class="doc"><p>Everything this library refuses, in one type.</p>
 <p><code>Malformed</code> carries the offset where the input stopped making sense, in UTF-16 code units — the unit <code>StringView</code> indexes by — so a caller can point at the character instead of at the string.</p></div>
 <p class="traits">Implements <code>Show</code> (<code>to_string()</code>) — the method it promotes is public on <code>Refused</code>.</p>

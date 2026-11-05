@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A real of any width — moonnum</title>
+<link rel="stylesheet" href="style.css">
+<script type="module" src="scrollbar.js"></script>
+</head>
+<body>
+
+<header class="bar">
+  <div class="wrap">
+    <a class="wordmark" href="index.html">moonnum<span class="dot">.</span></a>
+    <nav>
+      <a href="06-bigfloat.html" aria-current="page">Tutorial</a>
+      <a href="api.html">API</a>
+      <a href="algorithms.html">Algorithms</a>
+      <a href="https://github.com/moonbitstack/moonnum">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<article class="lesson">
+  <div class="folio"><span>Six</span><span>A real of any width</span></div>
+  <h1>A number as long as you ask for</h1>
+  <p class="lede">
+    A double is a real carried to fifty-three bits. This is the same thing at
+    whatever width you name, with the width kept on the value and a direction
+    for the bits that do not fit.
+  </p>
+
+  <p>
+    The four kinds the tower holds are widthless: an integer has as many digits
+    as it needs, a float has exactly fifty-three, a fraction is exact or is not.
+    A real carried to a width is the case in between — a value good to the
+    number of digits the caller pays for, and no better.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>let c = @moonnum.Context::new(200)
+
+@moonnum.BigFloat::of_double(0.1)
+@moonnum.BigFloat::parse("0.1", context=c).to_decimal(60)</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>0.1
+0.100000000000000000000000000000000000000000000000000000000000</code></pre>
+    </div>
+  </div>
+
+  <p>
+    The first is the double nearest to a tenth — printed as <code>0.1</code>
+    because that is the shortest text that reads back as it. The second is a
+    tenth at two hundred bits, which is what a tenth is to forty more places.
+    Neither of them is a tenth; both say how far they get.
+  </p>
+
+  <h3>Where the width goes</h3>
+
+  <p>
+    <code>Fixed</code> also carries a width, and spends it on the distance from
+    the point: a value far from one keeps few digits, and two values multiplied
+    together need the width chosen before the computation starts.
+    <code>BigFloat</code> spends it on the significand instead — the value is
+    <code>mantissa * 2^exponent</code> — so every value keeps the same count of
+    digits wherever it sits on the line.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>let one = @moonnum.BigFloat::one()
+let wide = @moonnum.BigFloat::one(context=c)
+let three = @moonnum.BigFloat::of_int(3)
+
+one / three
+(wide + wide) / three</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>0.3333333333333333
+0.666666666666666666666666666666666666666666666666666666666667</code></pre>
+    </div>
+  </div>
+
+  <p>
+    An operator keeps the wider of its two operands and rounds to nearest even.
+    That is the answer an operand set can justify: it is as good as what went in
+    and no better. A caller who wants a particular width says so, and the width
+    travels with the answer, so the next operation inherits it without being
+    told twice.
+  </p>
+
+  <h3>Five directions, one tie</h3>
+
+  <p>
+    A result that does not fit is rounded, and how is a choice:
+    <code>Nearest</code> to the even digit, <code>Floor</code> toward minus
+    infinity, <code>Ceiling</code> toward plus infinity, <code>Down</code> toward
+    zero, <code>Up</code> away from zero. One plus half of the last place of a
+    fifty-three-bit value is the case where all five disagree, and the only case
+    that is easy to get wrong.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>let one = @moonnum.BigFloat::one(context=c)
+let half_place = @moonnum.BigFloat::parse(
+  "1.1102230246251565404236316680908203125e-16", context=c,
+)
+for rounding in [
+  @moonnum.Rounding::Nearest, @moonnum.Rounding::Floor,
+  @moonnum.Rounding::Ceiling, @moonnum.Rounding::Down, @moonnum.Rounding::Up,
+] {
+  let context = @moonnum.Context::new(53, rounding~)
+  println("\{rounding}: \{context.add(one, half_place).to_significant(17)}")
+}</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>nearest: 1.0
+floor: 1.0
+ceiling: 1.0000000000000002
+down: 1.0
+up: 1.0000000000000002</code></pre>
+    </div>
+  </div>
+
+  <p>
+    A context is the width and the direction together, because a direction
+    without a width has nothing to round. <code>Context::add</code>, and its
+    siblings <code>sub</code>, <code>mul</code>, <code>div</code> and
+    <code>divide</code>, take both from the context. Addition has no
+    context-taking method of its own on the type: <code>+</code> already owns
+    the name <code>add</code>.
+  </p>
+
+  <h3>The functions, at any width</h3>
+
+  <p>
+    <code>sqrt</code>, <code>exp</code>, <code>ln</code> and <code>pow</code> are
+    the ones the series are for; everything circular and hyperbolic is written on
+    top of them. None of them reads a table of digits: <code>pi</code> is
+    Machin's formula, <code>ln 2</code> is two arctangents of a third, and
+    <code>e</code> is the exponential of one, each computed at the width asked
+    for. A thousand digits costs a few thousand terms and nothing else.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>let two = @moonnum.BigFloat::of_int(2, context=c)
+
+two.sqrt(context=c).to_significant(60)
+@moonnum.BigFloat::e(context=c).to_significant(60)
+@moonnum.BigFloat::pi(context=c).to_significant(60)
+@moonnum.BigFloat::ln2(context=c).to_significant(60)
+two.pow(@moonnum.BigFloat::of_double(0.5), context=c).to_significant(60)</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>1.41421356237309504880168872420969807856967187537694807317668
+2.71828182845904523536028747135266249775724709369995957496697
+3.14159265358979323846264338327950288419716939937510582097494
+0.69314718055994530941723212145817656807550013436025525412068
+1.41421356237309504880168872420969807856967187537694807317668</code></pre>
+    </div>
+  </div>
+
+  <p>
+    The width is a count of bits, and a digit costs three and a third of them, so
+    a thousand digits is thirty-three hundred and twenty-two bits. Nothing about
+    the arithmetic changes at that size; it is the same code, a longer number.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>let thousand = @moonnum.Context::new(3322)
+@moonnum.BigFloat::pi(context=thousand).to_decimal(80)</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>3.14159265358979323846264338327950288419716939937510582097494459230781640628620900</code></pre>
+    </div>
+  </div>
+
+  <h3>Turning a circle</h3>
+
+  <p>
+    A sine needs its argument reduced against a quarter turn, and the turn has to
+    be carried to as many bits as the argument has before its point — otherwise
+    the remainder is noise. That is the whole difficulty of
+    <code>sin(1e30)</code>, and the reason the answer is worth printing.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>let one_radian = @moonnum.BigFloat::one(context=c)
+
+one_radian.sin(context=c).to_significant(40)
+one_radian.cos(context=c).to_significant(40)
+one_radian.atan(context=c).to_significant(40)
+@moonnum.BigFloat::parse("1e30", context=c).sin(context=c).to_significant(20)
+one_radian.sinh(context=c).to_significant(40)
+one_radian.asinh(context=c).to_significant(40)</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>0.8414709848078965066525023216302989996226
+0.5403023058681397174009366074429766037323
+0.7853981633974483096156608458198757210493
+-0.09011690191213805803
+1.175201193643801456882381850595600815156
+0.8813735870195430252326093249797923090282</code></pre>
+    </div>
+  </div>
+
+  <p>
+    Past a hundred thousand bits of reduction the library stops rather than
+    answer a remainder of nothing. That is not a limit of the arithmetic; it is
+    the point past which carrying the turn would cost more than the answer is
+    worth, and it is said out loud rather than hidden.
+  </p>
+
+  <h3>Where there is no value</h3>
+
+  <p>
+    A real type has three answers that are not numbers: an infinity above, an
+    infinity below, and a NaN. They are kinds of the value, not numbers with a
+    flag, so the arithmetic reads digits only where there are digits. A square
+    root of a negative, a logarithm of a negative, a quotient of zero by zero:
+    each has the answer the standard gives it, and none of them is a number that
+    looks plausible.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>(-one).sqrt(context=c)
+@moonnum.BigFloat::zero(context=c).ln(context=c)
+one / @moonnum.BigFloat::zero(context=c)
+one.divide(@moonnum.BigFloat::zero(context=c)).to_string() catch {
+  @moonnum.ZeroDivision => "division by zero"
+  _ => "answered"
+}</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>nan
+-inf
+inf
+division by zero</code></pre>
+    </div>
+  </div>
+
+  <p>
+    The operator cannot raise, so it answers an infinity; <code>divide</code>
+    is the same quotient for a caller who would rather be told. That is the same
+    split the rest of the library makes between <code>/</code> and the functions
+    that refuse.
+  </p>
+
+  <h3>In and out of the other shapes</h3>
+
+  <p>
+    A double goes in and comes back out unchanged, since every finite double is a
+    binary fraction already. A whole number rounds to the width, and an integer
+    out of a value says which way to go.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>two.sqrt(context=c).to_double()
+@moonnum.BigFloat::parse("2.5", context=c).to_bigint()
+two.sqrt(context=c).to_fixed(@moonnum.Fixed::bits_for_digits(20))
+@moonnum.BigFloat::of_bigint(
+  @moonnum.parse_int("123456789012345678901234567890"), context=c,
+)</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>1.4142135623730951
+2
+1.4142135623730950488
+1.2345678901234567890123456789e+29</code></pre>
+    </div>
+  </div>
+
+  <p>
+    The last line is a thirty-digit integer at two hundred bits, which is
+    twenty-nine digits of it — the width, not the integer, is what decides. Text
+    is the other direction: <code>parse</code> reads what <code>float()</code>
+    reads and rounds once at the end, and <code>to_string</code> writes the
+    fewest digits that read back as the same value, the promise
+    <code>repr_float</code> already makes for a double.
+  </p>
+
+  <nav class="pager">
+    <a href="05-format.html">← Five: Formatting</a>
+    <a class="next" href="api.html">API reference →</a>
+  </nav>
+</article>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>moonnum · Apache-2.0</span>
+    <a href="https://github.com/moonbitstack/moonnum">source</a>
+    <a href="api.html">next</a>
+    <span class="spacer">built for MoonBit</span>
+  </div>
+</footer>
+
+</body>
+</html>

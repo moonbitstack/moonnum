@@ -44,6 +44,11 @@ GROUPS = [
     ("Fixed point", "A real at a width the caller picks, with the transcendentals a width is for.", [
         "parse_fixed", "Fixed",
     ]),
+    ("Binary floats", "A real carried to a width the caller picks: the "
+                       "significand as wide as it needs, an exponent of its own, "
+                       "and a direction for the bits that do not fit.", [
+        "BigFloat", "Context", "Rounding", "Kind",
+    ]),
     ("Fractions", "Exact rationals, kept in lowest terms.", [
         "parse_fraction", "repr_fraction", "Fraction",
     ]),
@@ -137,13 +142,12 @@ def read_mbti() -> list[tuple[str, str]]:
     index = 0
     while index < len(lines):
         line = lines[index]
-        if line.startswith("pub fn ") or line.startswith("pub(all) "):
+        if line.startswith(("pub fn ", "pub(all) ", "pub struct ")):
             chunk = [line]
-            # A declaration runs until its brackets and braces balance.
-            while chunk and (
-                chunk[-1].count("(") != chunk[-1].count(")")
-                or chunk[-1].count("{") != chunk[-1].count("}")
-            ):
+            # A declaration runs until its brackets and braces balance, which for
+            # a struct or an enum is several lines and has to be counted over the
+            # whole of them.
+            while chunk and not balanced(chunk):
                 index += 1
                 if index >= len(lines):
                     break
@@ -154,6 +158,11 @@ def read_mbti() -> list[tuple[str, str]]:
                 entries.append((name, signature))
         index += 1
     return entries
+
+
+def balanced(chunk: list[str]) -> bool:
+    joined = "\n".join(chunk)
+    return joined.count("(") == joined.count(")") and joined.count("{") == joined.count("}")
 
 
 def read_traits() -> dict[str, list[str]]:
@@ -187,7 +196,8 @@ def declaration_name(signature: str) -> str | None:
     match = re.match(r"pub fn ([A-Za-z0-9_]+(?:::[A-Za-z0-9_]+)?)", first)
     if match:
         return match.group(1)
-    match = re.match(r"pub\(all\) (?:struct|enum|suberror) ([A-Za-z0-9_]+)", first)
+    match = re.match(
+        r"pub(?:\(all\))? (?:struct|enum|suberror) ([A-Za-z0-9_]+)", first)
     if match:
         return match.group(1)
     return None
@@ -216,13 +226,18 @@ def read_docs() -> dict[str, str]:
                     docs.setdefault(name, "\n".join(buffer).strip())
                 buffer = []
                 continue
-            if stripped == "" or stripped.startswith("//"):
+            # A `#derive` or other attribute sits between the comment and the
+            # declaration; dropping the buffer there would drop the note too.
+            if stripped == "" or stripped.startswith("//") or stripped.startswith("#"):
                 continue
             buffer = []
     return docs
 
 
 def declared_name(declaration: str) -> str | None:
+    impl = re.match(r"pub impl \w+ for (\w+) with fn (\w+)", declaration)
+    if impl:
+        return impl.group(1) + "::" + impl.group(2)
     match = re.match(
         r"(?:pub(?:\(all\))?\s+)?(?:fn|struct|enum|suberror)\s+([A-Za-z0-9_]+(?:::[A-Za-z0-9_]+)?)",
         declaration,
@@ -275,7 +290,7 @@ def main() -> int:
     traits = read_traits()
     type_names = {
         name for name, signature in entries
-        if signature.startswith("pub(all) ")
+        if signature.startswith(("pub(all) ", "pub struct "))
     }
 
     by_group: dict[str, list[tuple[str, str]]] = {name: [] for name, _, _ in GROUPS}

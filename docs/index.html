@@ -153,6 +153,46 @@
 
   <section>
     <div class="wrap">
+      <h2>A fifth type, for the case in between</h2>
+      <p>
+        The four kinds are widthless: an integer has as many digits as it needs,
+        a float has exactly fifty-three, a fraction is exact or is not. There is
+        one more type for the case in between — a real carried to a width the
+        caller picks, with the width kept on the value and a direction for the
+        bits that do not fit.
+      </p>
+      <div class="pair">
+        <div>
+          <div class="label">moonbit</div>
+<pre><code>let c = @moonnum.Context::new(200)
+@moonnum.BigFloat::of_double(0.1)
+@moonnum.BigFloat::of_double(0.1).to_decimal(40)
+@moonnum.BigFloat::parse("0.1", context=c).to_decimal(40)
+@moonnum.BigFloat::pi(context=c).to_significant(40)</code></pre>
+        </div>
+        <div>
+          <div class="label">output</div>
+<pre><code>0.1
+0.1000000000000000055511151231257827021182
+0.1000000000000000000000000000000000000000
+3.141592653589793238462643383279502884197</code></pre>
+        </div>
+      </div>
+      <p>
+        The first line is the double nearest a tenth, written as the shortest
+        text that reads back as it; the second is that same double written out,
+        where the digits <code>repr_float</code> keeps to itself are on show. The
+        third is a tenth read at two hundred bits, which is a tenth to forty
+        places instead of a tenth to sixteen. The fourth is a constant nothing
+        typed in: the library computes <code>pi</code> from a formula, and there
+        is no table of digits in it to go stale.
+        <a href="06-bigfloat.html">One page on it</a>.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
       <h2>Reading and writing</h2>
       <p>
         Every parser takes the spellings you already type: base prefixes,
@@ -270,8 +310,9 @@ defined input, no answer</code></pre>
       <h2>Start</h2>
 <pre><code>moon add moonbitstack/moonnum</code></pre>
       <p>
-        Then <a href="01-integers.html">read the tutorial</a> — five pages, one
-        per kind plus the format language, each one runnable as written. The
+        Then <a href="01-integers.html">read the tutorial</a> — six pages, one
+        per kind plus the format language and the real of any width, each one
+        runnable as written. The
         <a href="api.html">API reference</a> lists every public item, and
         <a href="algorithms.html">the design notes</a> explain where the digits
         come from.
