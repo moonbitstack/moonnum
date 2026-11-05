@@ -28,6 +28,7 @@ One package, one error type (`@moonnum.Refused`), one formatting language.
 | A double, honestly printed | `Double` plus `repr_float` | 53 bits |
 | Complex | `@moonnum.Complex` | two doubles |
 | More digits than a double holds | `@moonnum.BigFloat` | a width you choose |
+| A complex number at that width | `@moonnum.BigComplex` | two widths you choose |
 
 `@moonnum.Number` holds the middle four and does the mixing, promoting along
 integer → fraction → float → complex and comparing exactly.
@@ -95,3 +96,9 @@ up.add(@moonnum.BigFloat::one(), @moonnum.BigFloat::parse("1e-100"))   // 1.0000
   for `BigFloat` unless a whole computation is meant to carry one width.
 - **`Number` has no `BigFloat` in it.** The four kinds are widthless; a value
   with a width stands beside the tower.
+- **A real function answers `nan` where the value is complex.** `BigFloat::sqrt`
+  of a negative, `ln` of a negative, `asin` past one: those are the answers the
+  real type owes an IEEE 754 consumer. The value is one promotion away —
+  `x.to_complex().sqrt(context=c)` — and `BigComplex` carries the principal
+  branches, with the cut read from above because nothing here can spell a signed
+  zero.

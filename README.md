@@ -146,6 +146,31 @@ A value goes into and out of the other shapes the library already has —
 `@bigint.BigInt`, `Fixed`, `Double`, decimal text — and a double makes the round
 trip unchanged, since every finite double is a binary fraction already.
 
+## When the answer is complex
+
+`sqrt(-1)` answers `nan`, and that is the right answer for a type that holds real
+numbers. The value exists anyway, and it is one promotion away — written out at
+the call site, because a function whose type is a real should not quietly return
+something else:
+
+```moonbit
+let c = @moonnum.Context::new(200)
+let minus_one = -@moonnum.BigFloat::one(context=c)
+
+minus_one.to_complex().sqrt(context=c)     // 0 + 1j, where sqrt(-1) was nan
+minus_one.to_complex().ln(context=c)       // 0 + pi*j
+@moonnum.BigComplex::new(two, zero).asin(context=c)   // pi/2 - 1.3169...*j
+```
+
+`BigComplex` is two `BigFloat`s and the elementary functions on them. The
+branches are the principal ones and the cut is read from above, which is the only
+side a type without a signed zero can spell; the reference implementation has no
+signed zero either, so the two agree without a table of exceptions. Division is a
+function that refuses, like `Fraction::divide`; a complex power is `exp(w ln z)`
+with a whole real exponent taken by squaring, so an integer power stays exact.
+`to_complex` is exact and `to_real` refuses a value whose imaginary part is not
+zero, rather than dropping it.
+
 ## Arithmetic
 
 | On | Functions |
@@ -155,7 +180,8 @@ trip unchanged, since every finite double is a binary fraction already.
 | complex | `+ - *`, `Complex::divide`, `Complex::pow`, `abs`, `conjugate` |
 | fractions | `+ - *`, `Fraction::divide`, `Fraction::pow`, `compare`, `floor_big`, `ceil_big`, `round`, `round_big`, `to_double`, `limit_denominator` |
 | any of them | `Number::add`, `Number::sub`, `Number::mul`, `Number::divide`, `Number::pow`, `compare_numeric`, `equal_numeric` |
-| `BigFloat` | `+ - * /`, `divide`, `abs`, `sqrt`, `exp`, `expm1`, `ln`, `log1p`, `pow`, `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `sinh`, `cosh`, `tanh`, `asinh`, `acosh`, `atanh`, `round`, `pi`, `e`, `ln2` |
+| `BigFloat` | `+ - * /`, `divide`, `abs`, `sqrt`, `exp`, `expm1`, `ln`, `log1p`, `pow`, `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `sinh`, `cosh`, `tanh`, `asinh`, `acosh`, `atanh`, `round`, `pi`, `e`, `ln2`, `to_complex` |
+| `BigComplex` | `+ - *`, `divide`, `abs`, `arg`, `conjugate`, `sqrt`, `exp`, `ln`, `pow`, `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `sinh`, `cosh`, `tanh`, `asinh`, `acosh`, `atanh`, `to_real` |
 
 `Fraction::pow` takes an integer exponent and stays a ratio — `(2/3) ** 100` is
 an exact numerator over an exact denominator — while `Number::pow` follows the

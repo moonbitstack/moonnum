@@ -31,7 +31,7 @@
     Generated from the module interface, so nothing here is aspirational.
   </p>
 
-<nav class="jump"><a href="#integers">Integers</a><a href="#floats">Floats</a><a href="#complex-numbers">Complex numbers</a><a href="#fixed-point">Fixed point</a><a href="#binary-floats">Binary floats</a><a href="#fractions">Fractions</a><a href="#numbers">Numbers</a><a href="#formatting">Formatting</a><a href="#errors">Errors</a></nav>
+<nav class="jump"><a href="#integers">Integers</a><a href="#floats">Floats</a><a href="#complex-numbers">Complex numbers</a><a href="#fixed-point">Fixed point</a><a href="#binary-floats">Binary floats</a><a href="#complex-numbers-at-any-width">Complex numbers at any width</a><a href="#fractions">Fractions</a><a href="#numbers">Numbers</a><a href="#formatting">Formatting</a><a href="#errors">Errors</a></nav>
 
 <section class="api-group" id="integers">
 <h2>Integers</h2>
@@ -505,6 +505,12 @@
 <p>An infinity and a NaN have no integer, and saying so is the point: a caller handed zero instead would not know it had not been given one.</p></div>
 </div>
 <div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::to_complex</span>(Self) -&gt; BigComplex</p>
+<div class="doc"><p>The promotion: the same value with an imaginary part of zero at the same width.</p>
+<p>Exact — a real number is a complex number already, and nothing is rounded by saying so. This is how a caller reaches the principal square root of a negative, or the logarithm of one:</p>
+<p>``<code>moonbit nocheck let c = @moonnum.Context::new(200) (-@moonnum.BigFloat::one(context=c)).to_complex().sqrt(context=c)  // 0 + 1j </code>``</p></div>
+</div>
+<div class="item">
 <p class="sig">pub fn <span class="name">BigFloat::to_decimal</span>(Self, Int32) -&gt; String</p>
 <div class="doc"><p>This is the spelling for a table or a printed constant, so the count is a promise rather than a maximum: <code>to_decimal(2)</code> of one half is <code>0.50</code>.</p></div>
 </div>
@@ -536,6 +542,10 @@
 
 </div>
 <div class="item">
+<p class="sig">pub fn <span class="name">Context::add_complex</span>(Self, BigComplex, BigComplex) -&gt; BigComplex</p>
+<div class="doc"><p><code>z + w</code> at the context&#x27;s width and direction — the complex twin of <code>Context::add</code>, which is the only way to ask for a width other than the wider of the two operands.</p></div>
+</div>
+<div class="item">
 <p class="sig">pub fn <span class="name">Context::div</span>(Self, BigFloat, BigFloat) -&gt; BigFloat</p>
 <div class="doc"><p>The quotient of <code>a</code> and <code>b</code> at this width and rounding, answering <code>±inf</code> and <code>nan</code> where that is the answer.</p></div>
 </div>
@@ -544,9 +554,21 @@
 <div class="doc"><p>The quotient of <code>a</code> and <code>b</code>, raising <code>ZeroDivision</code> for a zero divisor.</p></div>
 </div>
 <div class="item">
+<p class="sig">pub fn <span class="name">Context::divide_complex</span>(Self, BigComplex, BigComplex) -&gt; BigComplex raise Refused</p>
+<div class="doc"><p><code>z / w</code> at the context&#x27;s width, refusing a zero divisor as <code>divide</code> does.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Context::mul_complex</span>(Self, BigComplex, BigComplex) -&gt; BigComplex</p>
+<div class="doc"><p><code>z * w</code> at the context&#x27;s width.</p></div>
+</div>
+<div class="item">
 <p class="sig">pub fn <span class="name">Context::new</span>(Int32, rounding? : Rounding) -&gt; Self</p>
 <div class="doc"><p>A context of <code>precision</code> bits, rounding to nearest even unless told otherwise.</p>
 <p>A width below one is raised to one: a significand of no bits holds nothing but zero, and silently answering zero for every operation is worse than answering the one bit that was asked for.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Context::sub_complex</span>(Self, BigComplex, BigComplex) -&gt; BigComplex</p>
+<div class="doc"><p><code>z - w</code> at the context&#x27;s width.</p></div>
 </div>
 <div class="item">
 <p class="sig">pub(all) enum <span class="name">Kind</span> {
@@ -570,6 +592,127 @@
 <div class="doc"><p>How a result that does not fit the width it is rounded to is rounded.</p>
 <p>The five are the reference&#x27;s <code>n</code>, <code>f</code>, <code>c</code>, <code>d</code> and <code>u</code>. <code>Nearest</code> breaks a tie toward the even digit, so a sequence of roundings does not drift upward the way ties-away-from-zero does.</p></div>
 <p class="traits">Implements <code>Show</code> (<code>to_string()</code>) — the method it promotes is public on <code>Rounding</code>.</p>
+</div>
+</section>
+
+<section class="api-group" id="complex-numbers-at-any-width">
+<h2>Complex numbers at any width</h2>
+<p class="lede"><p>The second type the real functions needed: two <code>BigFloat</code> parts, the principal branches, and a promotion that a caller writes out.</p></p>
+<div class="item">
+<p class="sig">pub(all) struct <span class="name">BigComplex</span> {
+  real : BigFloat
+  imag : BigFloat
+}</p>
+<div class="doc"><p>A complex number: <code>z.real + z.imag * j</code>, both parts carried at whatever width they were given.</p>
+<p>The two parts are independent <code>BigFloat</code>s, so a width is a property of each part rather than of the pair; an operation rounds both to the width it is told, which for the operators is the wider of the two operands.</p>
+<p>This is not <code>Complex</code> generalised. <code>Complex</code> is fifty-three bits with C11 Annex G&#x27;s signed zeros and infinity recovery; this one has no signed zero at all — <code>BigFloat</code> cannot spell one — so it reads a branch cut from the upper side and follows the principal branches <code>mpmath</code> uses.</p></div>
+<p class="traits">Implements <code>Add</code> (<code>+</code>) · <code>Default</code> (<code>default()</code>) · <code>Eq</code> (<code>== and !=</code>) · <code>Mul</code> (<code>*</code>) · <code>Neg</code> (<code>unary -</code>) · <code>Show</code> (<code>to_string()</code>) · <code>Sub</code> (<code>-</code>) — the methods they promote are public on <code>BigComplex</code>.</p>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigComplex::abs</span>(Self, context? : Context) -&gt; BigFloat</p>
+<div class="doc"><p>The modulus, <code>sqrt(re^2 + im^2)</code>, rounded at the context&#x27;s width.</p>
+<p>An infinite part makes it infinite: a modulus is a distance, and a distance to a point at infinity is not a question without an answer.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigComplex::acos</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p><code>acos z</code> at the context&#x27;s width and direction.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigComplex::acosh</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p><code>acosh z</code> at the context&#x27;s width and direction.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigComplex::arg</span>(Self, context? : Context) -&gt; BigFloat</p>
+<div class="doc"><p>The argument in <code>(-pi, pi]</code>, the principal value <code>atan2(im, re)</code>.</p>
+<p>A point on the negative real axis has argument <code>pi</code> and not <code>-pi</code>: the cut is read from the side approaching from above, which is the only side this type can spell.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigComplex::asin</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p><code>asin z</code> at the context&#x27;s width and direction.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigComplex::asinh</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p><code>asinh z</code> at the context&#x27;s width and direction.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigComplex::atan</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p><code>atan z</code> at the context&#x27;s width and direction.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigComplex::atanh</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p><code>atanh z</code> at the context&#x27;s width and direction.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigComplex::conjugate</span>(Self) -&gt; Self</p>
+<div class="doc"><p>The conjugate: the same distance from the origin, on the other side of the real axis.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigComplex::cos</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p><code>cos z</code> at the context&#x27;s width and direction.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigComplex::cosh</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p><code>cosh z</code> at the context&#x27;s width and direction.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigComplex::divide</span>(Self, Self, context? : Context) -&gt; Self raise Refused</p>
+<div class="doc"><p><code>z / w</code> at the given width.</p>
+<p>Refuses a zero divisor, as <code>Fraction::divide</code> and <code>Complex::divide</code> do: <code>Div</code> cannot raise, so the operator is not offered for this type and the division that can fail is a function.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigComplex::exp</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p><code>e^z</code> at the context&#x27;s width and direction.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigComplex::j</span>(context? : Context) -&gt; Self</p>
+<div class="doc"><p>The imaginary unit at a width.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigComplex::ln</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p><code>ln z</code> at the context&#x27;s width and direction.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigComplex::new</span>(BigFloat, BigFloat) -&gt; Self</p>
+<div class="doc"><p><code>BigComplex(real, imag)</code>, with both parts exactly as given.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigComplex::of_real</span>(BigFloat) -&gt; Self</p>
+<div class="doc"><p>A real value as a complex one, without going through an instance.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigComplex::pow</span>(Self, Self, context? : Context) -&gt; Self raise Refused</p>
+<div class="doc"><p><code>z^w</code>, on the principal branch: <code>exp(w ln z)</code>, with a whole real exponent taken by squaring instead.</p>
+<p>Refuses <code>0</code> raised to a negative or a non-real power, the one place a complex power has no answer at all rather than an infinity: <code>ln 0</code> is not a number on the branch this type follows.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigComplex::precision</span>(Self) -&gt; Int32</p>
+<div class="doc"><p>The width an operation inherits when the caller does not name one: the wider of the two parts.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigComplex::sin</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p><code>sin z</code> at the context&#x27;s width and direction.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigComplex::sinh</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p><code>sinh z</code> at the context&#x27;s width and direction.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigComplex::sqrt</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p><code>sqrt z</code> at the context&#x27;s width and direction.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigComplex::tan</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p><code>tan z = (sin 2x + j sinh 2y) / (cos 2x + cosh 2y)</code>.</p>
+<p>The quotient form is used rather than <code>sin z / cos z</code> because it divides once by a real number that is never small unless both parts are: <code>cosh 2y &gt;= 1</code> keeps the divisor away from zero for any imaginary part at all.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigComplex::tanh</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p><code>tanh z = (sinh 2x + j sin 2y) / (cosh 2x + cos 2y)</code>, the hyperbolic twin of the tangent&#x27;s quotient form: <code>cosh 2x &gt;= 1</code> keeps the divisor away from zero.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigComplex::to_real</span>(Self, context? : Context) -&gt; BigFloat raise Refused</p>
+<div class="doc"><p>The way back, for a caller who knows the imaginary part is zero.</p>
+<p>Refuses rather than dropping a part that is not zero: <code>2 + 3j</code> is not a real number, and a <code>to_real</code> that answered <code>2</code> would be the kind of quiet answer this library does not give.</p></div>
 </div>
 </section>
 

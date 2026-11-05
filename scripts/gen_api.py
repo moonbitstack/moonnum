@@ -49,6 +49,12 @@ GROUPS = [
                        "and a direction for the bits that do not fit.", [
         "BigFloat", "Context", "Rounding", "Kind",
     ]),
+    ("Complex numbers at any width", "The second type the real functions "
+                                     "needed: two `BigFloat` parts, the "
+                                     "principal branches, and a promotion that "
+                                     "a caller writes out.", [
+        "BigComplex",
+    ]),
     ("Fractions", "Exact rationals, kept in lowest terms.", [
         "parse_fraction", "repr_fraction", "Fraction",
     ]),

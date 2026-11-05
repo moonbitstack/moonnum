@@ -278,6 +278,81 @@ division by zero</code></pre>
     that refuse.
   </p>
 
+  <h3>When the answer is complex</h3>
+
+  <p>
+    Those three answers are right for the real type and they are not the whole
+    story. A square root of a negative has a value; it is just not a real one.
+    The library carries that value in a second type, <code>BigComplex</code>,
+    whose two parts are each a <code>BigFloat</code> at whatever width they were
+    given — and the promotion is one call, written out where it happens, because
+    a function whose type is a real number should not quietly return something
+    else.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>let quick = @moonnum.Context::new(53)
+let minus_one = -@moonnum.BigFloat::one(context=quick)
+let zero = @moonnum.BigFloat::zero(context=quick)
+minus_one.to_complex().sqrt(context=quick)
+minus_one.to_complex().ln(context=quick)
+@moonnum.BigComplex::new(
+  @moonnum.BigFloat::of_int(2, context=quick), zero,
+).asin(context=quick)</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>(0.0+1.0j)
+(0.0+3.14159265358979j)
+(1.5707963267949-1.31695789692482j)</code></pre>
+    </div>
+  </div>
+
+  <p>
+    The branches are the principal ones, and the cut is read from above. That is
+    not a preference: a <code>BigFloat</code> has no signed zero, so a point on
+    the cut has one spelling and one meaning — the side approaching from the
+    upper half plane. A logarithm of a negative is therefore a logarithm plus
+    half a turn, an arcsine past one has a negative imaginary part, and an
+    arc-tangent of a purely imaginary argument past <code>j</code> bends the
+    other way. The reference implementation has no signed zero either, which is
+    why its answers and these agree without a table of exceptions.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>let corner = @moonnum.BigComplex::new(
+  @moonnum.BigFloat::of_int(3, context=quick),
+  @moonnum.BigFloat::of_int(4, context=quick).neg(),
+)
+corner
+corner.abs(context=quick)
+corner.arg(context=quick)</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>(3.0-4.0j)
+5.0
+-0.927295218001612</code></pre>
+    </div>
+  </div>
+
+  <p>
+    The operations the type carries are the ones the real type carries, written
+    the same way: <code>+</code>, <code>-</code>, <code>*</code>, a modulus, an
+    argument, a conjugate, and the elementary functions. Division is
+    <code>Complex</code>-style rather than operator-style, for the reason the
+    fraction and the complex types already have one: it can refuse. A complex
+    power is <code>exp(w ln z)</code> on the principal branch, with a whole real
+    exponent taken by squaring instead so that an integer power stays exact — a
+    negative base under a fractional exponent goes through the logarithm, so its
+    real part comes out as a rounded cosine of half a turn rather than a zero, and
+    the page would rather say that than reach for a special case that hides it.
+  </p>
+
   <h3>In and out of the other shapes</h3>
 
   <p>

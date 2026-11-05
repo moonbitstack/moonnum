@@ -91,6 +91,37 @@ fn main raise {
     }
   println("  divide() says: \{refused}")
 
+  // A complex number of the same width, for the questions the real type has to
+  // answer with `nan`: the square root of a negative, the logarithm of one, an
+  // arcsine past one. The branch is the principal one, and the cut is read from
+  // above, which is the only side a type without a signed zero can name.
+  println("")
+  println("when the answer is complex")
+  let quick = @moonnum.Context::new(53)
+  let minus_one = -@moonnum.BigFloat::one(context=quick)
+  let zero = @moonnum.BigFloat::zero(context=quick)
+  let two_f = @moonnum.BigFloat::of_int(2, context=quick)
+  println("  sqrt(-1): \{minus_one.to_complex().sqrt(context=quick)}")
+  println("  ln(-1):   \{minus_one.to_complex().ln(context=quick)}")
+  println(
+    "  asin(2):  \{@moonnum.BigComplex::new(two_f, zero).asin(context=quick)}",
+  )
+  let minus_two = @moonnum.BigComplex::new(
+    quick.add(minus_one, minus_one),
+    zero,
+  )
+  let half = @moonnum.BigComplex::new(
+    @moonnum.BigFloat::parse("0.5", context=quick),
+    zero,
+  )
+  println("  (-2)^0.5: \{minus_two.pow(half, context=quick)}")
+  let corner = @moonnum.BigComplex::new(
+    @moonnum.BigFloat::of_int(3, context=quick),
+    @moonnum.BigFloat::of_int(4, context=quick).neg(),
+  )
+  println("  3-4j:     \{corner} has modulus \{corner.abs(context=quick)}")
+  println("             and argument \{corner.arg(context=quick)}")
+
   // The other shapes the library and the host already speak.
   println("")
   println("in and out of the other shapes")
