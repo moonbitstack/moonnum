@@ -88,6 +88,52 @@ pub fn Refused::to_string(Self) -> String
 pub impl Show for Refused
 
 // Types and methods
+pub(all) struct BigComplex {
+  real : BigFloat
+  imag : BigFloat
+}
+pub fn BigComplex::abs(Self, context? : Context) -> BigFloat
+pub fn BigComplex::acos(Self, context? : Context) -> Self
+pub fn BigComplex::acosh(Self, context? : Context) -> Self
+pub fn BigComplex::add(Self, Self) -> Self
+pub fn BigComplex::arg(Self, context? : Context) -> BigFloat
+pub fn BigComplex::asin(Self, context? : Context) -> Self
+pub fn BigComplex::asinh(Self, context? : Context) -> Self
+pub fn BigComplex::atan(Self, context? : Context) -> Self
+pub fn BigComplex::atanh(Self, context? : Context) -> Self
+pub fn BigComplex::conjugate(Self) -> Self
+pub fn BigComplex::cos(Self, context? : Context) -> Self
+pub fn BigComplex::cosh(Self, context? : Context) -> Self
+pub fn BigComplex::default() -> Self
+pub fn BigComplex::divide(Self, Self, context? : Context) -> Self raise Refused
+pub fn BigComplex::equal(Self, Self) -> Bool
+pub fn BigComplex::exp(Self, context? : Context) -> Self
+pub fn BigComplex::j(context? : Context) -> Self
+pub fn BigComplex::ln(Self, context? : Context) -> Self
+pub fn BigComplex::mul(Self, Self) -> Self
+pub fn BigComplex::neg(Self) -> Self
+pub fn BigComplex::new(BigFloat, BigFloat) -> Self
+pub fn BigComplex::not_equal(Self, Self) -> Bool
+pub fn BigComplex::of_real(BigFloat) -> Self
+pub fn BigComplex::output(Self, &Logger) -> Unit
+pub fn BigComplex::pow(Self, Self, context? : Context) -> Self raise Refused
+pub fn BigComplex::precision(Self) -> Int32
+pub fn BigComplex::sin(Self, context? : Context) -> Self
+pub fn BigComplex::sinh(Self, context? : Context) -> Self
+pub fn BigComplex::sqrt(Self, context? : Context) -> Self
+pub fn BigComplex::sub(Self, Self) -> Self
+pub fn BigComplex::tan(Self, context? : Context) -> Self
+pub fn BigComplex::tanh(Self, context? : Context) -> Self
+pub fn BigComplex::to_real(Self, context? : Context) -> BigFloat raise Refused
+pub fn BigComplex::to_string(Self) -> String
+pub impl Add for BigComplex
+pub impl Default for BigComplex
+pub impl Eq for BigComplex
+pub impl Mul for BigComplex
+pub impl Neg for BigComplex
+pub impl Show for BigComplex
+pub impl Sub for BigComplex
+
 pub struct BigFloat {
   kind : Kind
   mantissa : @bigint.BigInt
@@ -149,6 +195,7 @@ pub fn BigFloat::sub(Self, Self) -> Self
 pub fn BigFloat::tan(Self, context? : Context) -> Self
 pub fn BigFloat::tanh(Self, context? : Context) -> Self
 pub fn BigFloat::to_bigint(Self, rounding? : Rounding) -> @bigint.BigInt raise Refused
+pub fn BigFloat::to_complex(Self) -> BigComplex
 pub fn BigFloat::to_decimal(Self, Int32) -> String
 pub fn BigFloat::to_double(Self) -> Double
 pub fn BigFloat::to_fixed(Self, Int32) -> Fixed raise Refused
@@ -198,11 +245,15 @@ pub struct Context {
   rounding : Rounding
 }
 pub fn Context::add(Self, BigFloat, BigFloat) -> BigFloat
+pub fn Context::add_complex(Self, BigComplex, BigComplex) -> BigComplex
 pub fn Context::div(Self, BigFloat, BigFloat) -> BigFloat
 pub fn Context::divide(Self, BigFloat, BigFloat) -> BigFloat raise Refused
+pub fn Context::divide_complex(Self, BigComplex, BigComplex) -> BigComplex raise Refused
 pub fn Context::mul(Self, BigFloat, BigFloat) -> BigFloat
+pub fn Context::mul_complex(Self, BigComplex, BigComplex) -> BigComplex
 pub fn Context::new(Int32, rounding? : Rounding) -> Self
 pub fn Context::sub(Self, BigFloat, BigFloat) -> BigFloat
+pub fn Context::sub_complex(Self, BigComplex, BigComplex) -> BigComplex
 
 pub struct Fixed {
   mantissa : @bigint.BigInt
