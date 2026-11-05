@@ -95,18 +95,30 @@ pub struct BigFloat {
   precision : Int32
 }
 pub fn BigFloat::abs(Self) -> Self
+pub fn BigFloat::acos(Self, context? : Context) -> Self
+pub fn BigFloat::acosh(Self, context? : Context) -> Self
 pub fn BigFloat::add(Self, Self) -> Self
+pub fn BigFloat::asin(Self, context? : Context) -> Self
+pub fn BigFloat::asinh(Self, context? : Context) -> Self
+pub fn BigFloat::atan(Self, context? : Context) -> Self
+pub fn BigFloat::atanh(Self, context? : Context) -> Self
 pub fn BigFloat::compare(Self, Self) -> Int32
+pub fn BigFloat::cos(Self, context? : Context) -> Self
+pub fn BigFloat::cosh(Self, context? : Context) -> Self
 pub fn BigFloat::default() -> Self
 pub fn BigFloat::div(Self, Self) -> Self
 pub fn BigFloat::divide(Self, Self, context? : Context) -> Self raise Refused
+pub fn BigFloat::e(context? : Context) -> Self
 pub fn BigFloat::equal(Self, Self) -> Bool
+pub fn BigFloat::exp(Self, context? : Context) -> Self
 pub fn BigFloat::infinity() -> Self
 pub fn BigFloat::is_finite(Self) -> Bool
 pub fn BigFloat::is_infinite(Self) -> Bool
 pub fn BigFloat::is_nan(Self) -> Bool
 pub fn BigFloat::is_zero(Self) -> Bool
 pub fn BigFloat::kind(Self) -> Kind
+pub fn BigFloat::ln(Self, context? : Context) -> Self
+pub fn BigFloat::ln2(context? : Context) -> Self
 pub fn BigFloat::mul(Self, Self) -> Self
 pub fn BigFloat::nan() -> Self
 pub fn BigFloat::neg(Self) -> Self
@@ -123,10 +135,17 @@ pub fn BigFloat::op_le(Self, Self) -> Bool
 pub fn BigFloat::op_lt(Self, Self) -> Bool
 pub fn BigFloat::output(Self, &Logger) -> Unit
 pub fn BigFloat::parse(StringView, context? : Context) -> Self raise Refused
+pub fn BigFloat::pi(context? : Context) -> Self
+pub fn BigFloat::pow(Self, Self, context? : Context) -> Self
 pub fn BigFloat::precision(Self) -> Int32
 pub fn BigFloat::round(Self, context? : Context) -> Self
 pub fn BigFloat::sign(Self) -> Int32
+pub fn BigFloat::sin(Self, context? : Context) -> Self
+pub fn BigFloat::sinh(Self, context? : Context) -> Self
+pub fn BigFloat::sqrt(Self, context? : Context) -> Self
 pub fn BigFloat::sub(Self, Self) -> Self
+pub fn BigFloat::tan(Self, context? : Context) -> Self
+pub fn BigFloat::tanh(Self, context? : Context) -> Self
 pub fn BigFloat::to_bigint(Self, rounding? : Rounding) -> @bigint.BigInt raise Refused
 pub fn BigFloat::to_decimal(Self, Int32) -> String
 pub fn BigFloat::to_double(Self) -> Double
