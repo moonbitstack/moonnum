@@ -51,6 +51,20 @@ test "the width a value keeps is the width it was rounded to" {
 }
 
 ///|
+test "a round that carries out of the top bit keeps the width" {
+  // At four bits the neighbours are fifteen sixteenths and one, and the sum of
+  // the first and a thirty-secondth is exactly halfway: to even is one, whose
+  // significand is one bit too long until the carry is taken out.
+  let c = Context::new(4)
+  let sum = c.add(BigFloat::parse("0.9375"), BigFloat::parse("0.03125"))
+  assert_eq(sum.to_string(), "1.0")
+  assert_eq(sum.precision(), 4)
+  assert_true(magnitude(sum.mantissa).bit_length() <= 4)
+  // And the value after the carry is still exact: doubling it is two.
+  assert_eq((sum + sum).to_significant(2), "2.0")
+}
+
+///|
 test "zero has no exponent and no sign" {
   let zero = BigFloat::zero()
   assert_eq(zero.to_string(), "0.0")
