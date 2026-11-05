@@ -73,39 +73,6 @@ fn placed(negative : Bool, digits : String, decpt : Int32) -> String {
 }
 
 ///|
-/// The fewest significant digits that read back as this value, and where the
-/// point sits.
-///
-/// A width of `p` bits is told apart from its neighbours by about `p * 0.301`
-/// digits, and a value in the middle of its neighbours needs fewer; printing all
-/// of them would show the digits a rounding left behind rather than the number
-/// the caller wrote. The count is found by halving the range and reading each
-/// candidate back, so the search costs eight parses and not three hundred.
-fn shortest_of(value : BigFloat) -> (String, Int32) {
-  let (negative, top, bottom) = ratio_of(value)
-  let most = decimal_digits(value.precision) + 3
-  let reads_back = (count : Int32) => {
-    let (text, decpt) = sig_digits(top, bottom, count)
-    let written = placed(negative, strip_zeros(text), decpt)
-    let back = BigFloat::parse(written, context=Context::new(value.precision)) catch {
-      _ => return false
-    }
-    back == value
-  }
-  let mut low = 1
-  let mut high = most
-  while low < high {
-    let mid = (low + high) / 2
-    if reads_back(mid) {
-      high = mid
-    } else {
-      low = mid + 1
-    }
-  }
-  sig_digits(top, bottom, low)
-}
-
-///|
 /// This is the spelling for a table or a printed constant, so the count is a
 /// promise rather than a maximum: `to_decimal(2)` of one half is `0.50`.
 pub fn BigFloat::to_decimal(self : BigFloat, places : Int32) -> String {
@@ -161,19 +128,21 @@ pub fn BigFloat::to_significant(self : BigFloat, digits : Int32) -> String {
 }
 
 ///|
+/// The digits the width speaks for — fifteen at fifty-three bits, sixty at two
+/// hundred — rounded once on the exact value, with the zeros at the end dropped
+/// so that a whole number still reads as one.
+///
+/// Printing every digit the width can tell apart, rather than the fewest that
+/// read back, is what the reference does, and it is the honest count for a value
+/// whose width is the thing it carries: two values of the same number at
+/// different widths print differently, and the text says which width answered.
+/// `to_significant` is the way to ask for another count.
 pub impl Show for BigFloat with fn to_string(self) {
   match self.kind {
     NotANumber => "nan"
     PositiveInfinity => "inf"
     NegativeInfinity => "-inf"
-    Finite =>
-      if self.mantissa.is_zero() {
-        "0.0"
-      } else {
-        let (negative, _, _) = ratio_of(self)
-        let (text, decpt) = shortest_of(self)
-        placed(negative, strip_zeros(text), decpt)
-      }
+    Finite => self.to_significant(decimal_digits(self.precision))
   }
 }
 

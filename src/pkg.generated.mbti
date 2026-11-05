@@ -111,6 +111,7 @@ pub fn BigFloat::divide(Self, Self, context? : Context) -> Self raise Refused
 pub fn BigFloat::e(context? : Context) -> Self
 pub fn BigFloat::equal(Self, Self) -> Bool
 pub fn BigFloat::exp(Self, context? : Context) -> Self
+pub fn BigFloat::expm1(Self, context? : Context) -> Self
 pub fn BigFloat::infinity() -> Self
 pub fn BigFloat::is_finite(Self) -> Bool
 pub fn BigFloat::is_infinite(Self) -> Bool
@@ -119,6 +120,7 @@ pub fn BigFloat::is_zero(Self) -> Bool
 pub fn BigFloat::kind(Self) -> Kind
 pub fn BigFloat::ln(Self, context? : Context) -> Self
 pub fn BigFloat::ln2(context? : Context) -> Self
+pub fn BigFloat::log1p(Self, context? : Context) -> Self
 pub fn BigFloat::mul(Self, Self) -> Self
 pub fn BigFloat::nan() -> Self
 pub fn BigFloat::neg(Self) -> Self

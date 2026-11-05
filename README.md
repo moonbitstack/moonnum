@@ -129,8 +129,10 @@ let flinch = @moonnum.Context::new(53, rounding=@moonnum.Rounding::Up)
 flinch.add(@moonnum.BigFloat::one(), @moonnum.BigFloat::parse("1e-100"))   // 1.0000000000000002
 ```
 
-`sqrt`, `exp`, `ln`, `pow`, the circular and the hyperbolic functions are all
-there, computed at the width asked for from series and formulas — `pi` is
+`sqrt`, `exp`, `ln`, `pow` — and `expm1` and `log1p`, which are the same two
+answers taken without ever forming the one that would swallow a small argument —
+the circular and the hyperbolic functions are all there, computed at the width
+asked for from series and formulas — `pi` is
 Machin's, `ln 2` is two arctangents of a third, `e` is the exponential of one.
 Nothing in the source is a table of digits that could go stale, and a thousand
 digits costs a few thousand terms and nothing else.
@@ -153,7 +155,7 @@ trip unchanged, since every finite double is a binary fraction already.
 | complex | `+ - *`, `Complex::divide`, `Complex::pow`, `abs`, `conjugate` |
 | fractions | `+ - *`, `Fraction::divide`, `Fraction::pow`, `compare`, `floor_big`, `ceil_big`, `round`, `round_big`, `to_double`, `limit_denominator` |
 | any of them | `Number::add`, `Number::sub`, `Number::mul`, `Number::divide`, `Number::pow`, `compare_numeric`, `equal_numeric` |
-| `BigFloat` | `+ - * /`, `divide`, `abs`, `sqrt`, `exp`, `ln`, `pow`, `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `sinh`, `cosh`, `tanh`, `asinh`, `acosh`, `atanh`, `round`, `pi`, `e`, `ln2` |
+| `BigFloat` | `+ - * /`, `divide`, `abs`, `sqrt`, `exp`, `expm1`, `ln`, `log1p`, `pow`, `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `sinh`, `cosh`, `tanh`, `asinh`, `acosh`, `atanh`, `round`, `pi`, `e`, `ln2` |
 
 `Fraction::pow` takes an integer exponent and stays a ratio — `(2/3) ** 100` is
 an exact numerator over an exact denominator — while `Number::pow` follows the
@@ -178,7 +180,7 @@ tower and gives a float when an exponent is one.
 | `float_hex(d)` / `float_of_hex(s)` | the exact hexadecimal form, and back |
 | `repr_complex(z)`, `repr_fraction(f)` | `(1+2j)`, `2j`, `Fraction(3, 4)` |
 | `format(value, spec)` | the format-specification mini-language, for any kind |
-| `to_string` | the fewest digits that read back at the value's width, as a double's `repr` does |
+| `to_string` | as many digits as the width speaks for — fifteen at 53 bits, sixty at 200 — trailing zeros dropped |
 | `to_decimal(places)`, `to_significant(digits)` | an exact count of places, or of significant digits |
 
 ### The format language

@@ -167,6 +167,102 @@ pub fn BigFloat::ln(self : BigFloat, context? : Context) -> BigFloat {
 }
 
 ///|
+/// The smallest argument whose exponential minus one is formed by subtraction.
+///
+/// Below it, `e^x` is so nearly one that taking one away keeps only the bits
+/// where the two agree; above it the exponential has grown enough that the
+/// subtraction costs a bit and a half, which the guard bits pay for.
+const EXPM1_SERIES_LIMIT : Double = 0.5
+
+///|
+/// `e^x - 1`, without subtracting one from an exponential that is nearly one.
+///
+/// By the time `e^x` is written down, the answer to `e^x - 1` for a small `x` is
+/// gone: at two hundred bits `e^1e-40` and one differ nowhere the width can see.
+/// The series that starts at `x` never forms the one, so it keeps the digits the
+/// subtraction would have thrown away.
+fn expm1_at(value : BigFloat, precision : Int32) -> BigFloat {
+  match value.kind {
+    NotANumber => return nan_at(precision)
+    PositiveInfinity => return infinity_at(false, precision)
+    NegativeInfinity => return finite_at(-1N, 0, precision)
+    Finite => ()
+  }
+  if value.mantissa.is_zero() {
+    return finite_at(0N, 0, precision)
+  }
+  let width = working(precision)
+  let c = Context::new(width)
+  if value.to_double().abs() > EXPM1_SERIES_LIMIT {
+    return c
+      .sub(exp_at(value, width), BigFloat::one(context=c))
+      .round(context=Context::new(precision))
+  }
+  // `term` starts at the first term of the series, `x/1!`, so the division that
+  // turns it into the second one is by two.
+  let mut term = value
+  let mut sum = value
+  let mut n = 1
+  while true {
+    n = n + 1
+    term = c.div(c.mul(term, value), BigFloat::of_int(n, context=c))
+    sum = c.add(sum, term)
+    if negligible(term, sum, width) {
+      break
+    }
+  }
+  sum.round(context=Context::new(precision))
+}
+
+///|
+/// `e^x - 1` at the context's width and direction.
+pub fn BigFloat::expm1(self : BigFloat, context? : Context) -> BigFloat {
+  let c = context_of(context, inherited_unary(self))
+  directed(precision => expm1_at(self, precision), c)
+}
+
+///|
+/// `ln(1 + x)`, without ever forming `1 + x`.
+///
+/// The argument is not added to one at all: `ln_one_plus` halves it through
+/// `sqrt(1 + x) - 1 = x / (sqrt(1 + x) + 1)`, which keeps every digit of `x`
+/// however small, and the series then answers for a value near zero instead of a
+/// value near one. Past a half, one is added — and there the addition is exact,
+/// because the two are within a factor of two and the low bits have nowhere to
+/// go.
+fn log1p_at(value : BigFloat, precision : Int32) -> BigFloat {
+  match value.kind {
+    NotANumber => return nan_at(precision)
+    PositiveInfinity => return infinity_at(false, precision)
+    NegativeInfinity => return nan_at(precision)
+    Finite => ()
+  }
+  let width = working(precision)
+  let c = Context::new(width)
+  let unit = BigFloat::one(context=c)
+  if value == -unit {
+    return infinity_at(true, precision)
+  }
+  if value < -unit {
+    return nan_at(precision)
+  }
+  if value.mantissa.is_zero() {
+    return finite_at(0N, 0, precision)
+  }
+  if value.abs() > BigFloat::of_double(0.5) {
+    return ln_at(c.add(unit, value), precision)
+  }
+  ln_one_plus(value, width).round(context=Context::new(precision))
+}
+
+///|
+/// `ln(1 + x)` at the context's width and direction.
+pub fn BigFloat::log1p(self : BigFloat, context? : Context) -> BigFloat {
+  let c = context_of(context, inherited_unary(self))
+  directed(precision => log1p_at(self, precision), c)
+}
+
+///|
 /// Whether the value is a whole number.
 fn is_whole(value : BigFloat) -> Bool {
   if !value.is_finite() {

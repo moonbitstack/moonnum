@@ -84,7 +84,7 @@ one / three
     </div>
     <div>
       <div class="label">output</div>
-<pre><code>0.3333333333333333
+<pre><code>0.333333333333333
 0.666666666666666666666666666666666666666666666666666666666667</code></pre>
     </div>
   </div>
@@ -151,6 +151,15 @@ up: 1.0000000000000002</code></pre>
     Machin's formula, <code>ln 2</code> is two arctangents of a third, and
     <code>e</code> is the exponential of one, each computed at the width asked
     for. A thousand digits costs a few thousand terms and nothing else.
+  </p>
+
+  <p>
+    Two of them exist because the obvious spelling has a hole in it.
+    <code>exp(x) - 1</code> is zero for any <code>x</code> small enough that the
+    exponential is one, and <code>ln(1 + x)</code> is zero for the same reason;
+    <code>expm1</code> and <code>log1p</code> are the same two answers taken
+    without ever forming the one, so a small argument keeps its digits instead of
+    being swallowed by a rounding that happened before the subtraction.
   </p>
 
   <div class="pair">
@@ -300,9 +309,11 @@ two.sqrt(context=c).to_fixed(@moonnum.Fixed::bits_for_digits(20))
     The last line is a thirty-digit integer at two hundred bits, which is
     twenty-nine digits of it — the width, not the integer, is what decides. Text
     is the other direction: <code>parse</code> reads what <code>float()</code>
-    reads and rounds once at the end, and <code>to_string</code> writes the
-    fewest digits that read back as the same value, the promise
-    <code>repr_float</code> already makes for a double.
+    reads and rounds once at the end, and <code>to_string</code> writes as many
+    digits as the width speaks for — fifteen at fifty-three bits, sixty at two
+    hundred — with the zeros at the end dropped so a whole number still reads as
+    one. <code>to_significant</code> and <code>to_decimal</code> take a count when
+    one is wanted.
   </p>
 
   <nav class="pager">

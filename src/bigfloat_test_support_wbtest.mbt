@@ -127,6 +127,8 @@ fn unary_of(name : String, value : BigFloat, c : Context) -> BigFloat raise {
   match name {
     "exp" => value.exp(context=c)
     "ln" => value.ln(context=c)
+    "expm1" => value.expm1(context=c)
+    "log1p" => value.log1p(context=c)
     "sqrt" => value.sqrt(context=c)
     "sin" => value.sin(context=c)
     "cos" => value.cos(context=c)

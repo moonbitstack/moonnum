@@ -79,7 +79,7 @@ test "zero has no exponent and no sign" {
 test "one third at three widths" {
   let one = BigFloat::one()
   let three = BigFloat::of_int(3)
-  assert_eq((one / three).to_string(), "0.3333333333333333")
+  assert_eq((one / three).to_string(), "0.333333333333333")
   let wide = Context::new(200)
   assert_eq(
     wide.div(one, three).to_significant(60),
@@ -282,6 +282,62 @@ test "text from outside, and where it stops" {
   assert_eq(stopped_at("1e"), 2)
   assert_eq(stopped_at("1.2.3"), 3)
   assert_eq(stopped_at("nanish"), 3)
+}
+
+///|
+test "the printed digits are the ones the width speaks for" {
+  // Fifteen digits at fifty-three bits, which is what the reference counts. The
+  // value below needs seventeen to be told apart from one, and the text does not
+  // reach that far: the width is what the text is reporting, not the value's
+  // distance from its neighbour.
+  let above = BigFloat::parse("1.0000000000000002")
+  assert_eq(above.to_string(), "1.0")
+  assert_eq(above.to_significant(17), "1.0000000000000002")
+  let wide = BigFloat::of_int(3, context=Context::new(200))
+  assert_eq(
+    (BigFloat::one(context=Context::new(200)) / wide).to_string().length(),
+    62,
+  )
+}
+
+///|
+test "one plus a small argument, without ever forming the one" {
+  // At fifty-three bits the exponential of a sixteenth of a quadrillionth is
+  // one, and one less one is nothing at all; the answer the caller wanted is
+  // still there in the series that starts at the argument.
+  let narrow = Context::new(53)
+  let dust = BigFloat::parse("1e-16", context=narrow)
+  assert_eq(
+    dust.exp(context=narrow).sub(BigFloat::one(context=narrow)).to_string(),
+    "0.0",
+  )
+  assert_eq(dust.expm1(context=narrow).to_significant(6), "1e-16")
+  // The same at the logarithm's end: one plus a hundred-digit nothing is one,
+  // and the logarithm of one is nothing.
+  let wide = Context::new(200)
+  let slighter = BigFloat::parse("1e-100", context=wide)
+  assert_eq(wide.add(slighter, BigFloat::one(context=wide)).to_string(), "1.0")
+  assert_eq(slighter.log1p(context=wide).to_significant(3), "1e-100")
+  assert_eq(slighter.log1p(context=wide).precision(), 200)
+}
+
+///|
+test "the pair is the pair" {
+  let c = Context::new(200)
+  for text in ["-0.5", "-0.001", "0.25", "0.5", "3", "-9"] {
+    let value = BigFloat::parse(text, context=c)
+    assert_close(
+      value.expm1(context=c).add(BigFloat::one(context=c)),
+      value.exp(context=c),
+      185,
+    )
+    assert_close(value.expm1(context=c).log1p(context=c), value, 185)
+  }
+  let unit = BigFloat::one(context=c)
+  assert_true(BigFloat::negative_infinity().expm1(context=c) == -unit)
+  assert_true((-unit).log1p(context=c).is_infinite())
+  assert_true(BigFloat::parse("-2", context=c).log1p(context=c).is_nan())
+  assert_true(unit.expm1(context=c).is_finite())
 }
 
 ///|
