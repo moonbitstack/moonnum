@@ -16,6 +16,8 @@ pub fn ceil_big(Double) -> @bigint.BigInt raise Refused
 
 pub fn comb(@bigint.BigInt, @bigint.BigInt) -> @bigint.BigInt raise Refused
 
+pub let context_default : Context
+
 pub fn divmod(@bigint.BigInt, @bigint.BigInt) -> (@bigint.BigInt, @bigint.BigInt) raise Refused
 
 pub fn factorial(@bigint.BigInt) -> @bigint.BigInt raise Refused
@@ -86,6 +88,62 @@ pub fn Refused::to_string(Self) -> String
 pub impl Show for Refused
 
 // Types and methods
+pub struct BigFloat {
+  kind : Kind
+  mantissa : @bigint.BigInt
+  exponent : Int32
+  precision : Int32
+}
+pub fn BigFloat::abs(Self) -> Self
+pub fn BigFloat::add(Self, Self) -> Self
+pub fn BigFloat::compare(Self, Self) -> Int32
+pub fn BigFloat::default() -> Self
+pub fn BigFloat::div(Self, Self) -> Self
+pub fn BigFloat::divide(Self, Self, context? : Context) -> Self raise Refused
+pub fn BigFloat::equal(Self, Self) -> Bool
+pub fn BigFloat::infinity() -> Self
+pub fn BigFloat::is_finite(Self) -> Bool
+pub fn BigFloat::is_infinite(Self) -> Bool
+pub fn BigFloat::is_nan(Self) -> Bool
+pub fn BigFloat::is_zero(Self) -> Bool
+pub fn BigFloat::kind(Self) -> Kind
+pub fn BigFloat::mul(Self, Self) -> Self
+pub fn BigFloat::nan() -> Self
+pub fn BigFloat::neg(Self) -> Self
+pub fn BigFloat::negative_infinity() -> Self
+pub fn BigFloat::not_equal(Self, Self) -> Bool
+pub fn BigFloat::of_bigint(@bigint.BigInt, context? : Context) -> Self
+pub fn BigFloat::of_double(Double) -> Self
+pub fn BigFloat::of_fixed(Fixed, context? : Context) -> Self
+pub fn BigFloat::of_int(Int32, context? : Context) -> Self
+pub fn BigFloat::one(context? : Context) -> Self
+pub fn BigFloat::op_ge(Self, Self) -> Bool
+pub fn BigFloat::op_gt(Self, Self) -> Bool
+pub fn BigFloat::op_le(Self, Self) -> Bool
+pub fn BigFloat::op_lt(Self, Self) -> Bool
+pub fn BigFloat::output(Self, &Logger) -> Unit
+pub fn BigFloat::parse(StringView, context? : Context) -> Self raise Refused
+pub fn BigFloat::precision(Self) -> Int32
+pub fn BigFloat::round(Self, context? : Context) -> Self
+pub fn BigFloat::sign(Self) -> Int32
+pub fn BigFloat::sub(Self, Self) -> Self
+pub fn BigFloat::to_bigint(Self, rounding? : Rounding) -> @bigint.BigInt raise Refused
+pub fn BigFloat::to_decimal(Self, Int32) -> String
+pub fn BigFloat::to_double(Self) -> Double
+pub fn BigFloat::to_fixed(Self, Int32) -> Fixed raise Refused
+pub fn BigFloat::to_significant(Self, Int32) -> String
+pub fn BigFloat::to_string(Self) -> String
+pub fn BigFloat::zero(context? : Context) -> Self
+pub impl Add for BigFloat
+pub impl Compare for BigFloat
+pub impl Default for BigFloat
+pub impl Div for BigFloat
+pub impl Eq for BigFloat
+pub impl Mul for BigFloat
+pub impl Neg for BigFloat
+pub impl Show for BigFloat
+pub impl Sub for BigFloat
+
 pub(all) struct Complex {
   re : Double
   im : Double
@@ -113,6 +171,17 @@ pub impl Mul for Complex
 pub impl Neg for Complex
 pub impl Show for Complex
 pub impl Sub for Complex
+
+pub struct Context {
+  precision : Int32
+  rounding : Rounding
+}
+pub fn Context::add(Self, BigFloat, BigFloat) -> BigFloat
+pub fn Context::div(Self, BigFloat, BigFloat) -> BigFloat
+pub fn Context::divide(Self, BigFloat, BigFloat) -> BigFloat raise Refused
+pub fn Context::mul(Self, BigFloat, BigFloat) -> BigFloat
+pub fn Context::new(Int32, rounding? : Rounding) -> Self
+pub fn Context::sub(Self, BigFloat, BigFloat) -> BigFloat
 
 pub struct Fixed {
   mantissa : @bigint.BigInt
@@ -209,6 +278,16 @@ pub impl Neg for Fraction
 pub impl Show for Fraction
 pub impl Sub for Fraction
 
+#derive(Eq)
+pub(all) enum Kind {
+  Finite
+  PositiveInfinity
+  NegativeInfinity
+  NotANumber
+}
+pub fn Kind::equal(Self, Self) -> Bool
+pub fn Kind::not_equal(Self, Self) -> Bool
+
 pub(all) enum Number {
   Int(@bigint.BigInt)
   Float(Double)
@@ -236,6 +315,17 @@ pub impl Mul for Number
 pub impl Neg for Number
 pub impl Show for Number
 pub impl Sub for Number
+
+#derive(Eq)
+pub(all) enum Rounding {
+  Nearest
+  Floor
+  Ceiling
+  Down
+  Up
+}
+pub fn Rounding::equal(Self, Self) -> Bool
+pub fn Rounding::not_equal(Self, Self) -> Bool
 
 // Type aliases
 
