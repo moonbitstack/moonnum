@@ -47,7 +47,7 @@ jobs:
 
       - name: check tag and namespace
         run: |
-          version="$(sed -n 's/^version = "\(.*\)"/\1/p' moon.mod)
+          version="$(sed -n 's/^version = "\(.*\)"/\1/p' moon.mod)"
           grep -q '^name = "moonbitstack/' moon.mod || { echo "::error::moon.mod is not under moonbitstack"; exit 1; }
           if [ "$GITHUB_REF_TYPE" = tag ] && [ "${GITHUB_REF_NAME##*v}" != "$version" ]; then
             echo "::error::tag $GITHUB_REF_NAME does not match moon.mod version $version"; exit 1
