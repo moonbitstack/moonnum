@@ -99,7 +99,7 @@ jobs:
         env:
           CREDENTIALS: ${{ secrets.MOONCAKES_CREDENTIALS }}
         run: |
-          version="$(sed -n 's/^version = "\(.*\)"/\1/p' moon.mod)
+          version="$(sed -n 's/^version = "\(.*\)"/\1/p' moon.mod)"
           trap 'rm -f ~/.moon/credentials.json' EXIT
           printf '%s' "$CREDENTIALS" > ~/.moon/credentials.json
           moon update
