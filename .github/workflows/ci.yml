@@ -65,6 +65,15 @@ jobs:
           command -v python3 >/dev/null 2>&1 || py=python
           "$py" scripts/check_docs.py --examples
 
+      # A reader pastes the README and the skill into a project, so each block
+      # has to compile as written, against the source this repository holds.
+      - name: the code in the docs compiles
+        shell: bash
+        run: |
+          py=python3
+          command -v python3 >/dev/null 2>&1 || py=python
+          "$py" scripts/check_snippets.py
+
       - name: lint (fmt is clean)
         run: |
           moon fmt && git diff --exit-code
