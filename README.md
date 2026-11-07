@@ -11,23 +11,25 @@ one package, one error type, one formatting language.
 </div>
 
 ```moonbit
-let n = @moonnum.parse_int("0xff_ec", base=0)      // 65516, any base, any size
-let z = @moonnum.parse_complex("3+4j")             // (3+4j)
-let f = @moonnum.parse_fraction("0.1")             // 1/10, exactly
-
-@moonnum.repr_float(0.1 + 0.2)                     // "0.30000000000000004"
-@moonnum.format(f, ".3%")                          // "10.000%"
+test "read the kinds" {
+  assert_eq(@moonnum.parse_int("0xff_ec", base=0).to_string(), "65516")   // any base, any size
+  assert_eq(@moonnum.parse_complex("3+4j").to_string(), "(3+4j)")
+  assert_eq(@moonnum.format(@moonnum.parse("0.1"), ".3%"), "10.000%")    // 1/10, exactly
+  assert_eq(@moonnum.repr_float(0.1 + 0.2), "0.30000000000000004")
+}
 ```
 
 Nothing in here rounds behind your back. `0.1` as a fraction is one tenth;
 `0.1` as a float is the double it really is, and says so when asked:
 
 ```moonbit
-@moonnum.repr_float(0.1)              // "0.1"     shortest string that reads back
-@moonnum.float_hex(0.1)               // "0x1.999999999999ap-4"
-@moonnum.as_ratio(0.1)                // 3602879701896397/36028797018963968
-@moonnum.repr_float(0.1 + 0.2)        // "0.30000000000000004"
-@moonnum.format(@moonnum.parse("22/7"), ".6f")   // "3.142857", exactly rounded
+test "a float, read and written" {
+  assert_eq(@moonnum.repr_float(0.1), "0.1")                 // shortest string that reads back
+  assert_eq(@moonnum.float_hex(0.1), "0x1.999999999999ap-4")
+  assert_eq(@moonnum.as_ratio(0.1).to_string(), "3602879701896397/36028797018963968")
+  assert_eq(@moonnum.repr_float(0.1 + 0.2), "0.30000000000000004")
+  assert_eq(@moonnum.format(@moonnum.parse("22/7"), ".6f"), "3.142857")   // exactly rounded
+}
 ```
 
 ## Install
@@ -55,9 +57,13 @@ Runs on `wasm`, `wasm-gc`, `js` and `native`.
 `Number` holds any of the four and does the mixing:
 
 ```moonbit
-let third = @moonnum.parse("1/3")
-let total = @moonnum.parse("1") + third + @moonnum.parse("0.5")   // 11/6
-let judged = @moonnum.parse("1") == @moonnum.parse("1.0")         // true
+test "an integer, a fraction and a float in one sum" {
+  let third = @moonnum.parse("1/3")
+  let total = @moonnum.parse("1") + third + @moonnum.parse("0.5")
+  assert_eq(total.to_string(), "1.8333333333333333")   // promoted to a float
+  let judged = @moonnum.parse("1") == @moonnum.parse("1.0")
+  assert_true(judged)                                     // an integer and its float are equal
+}
 ```
 
 Promotion follows the tower — integer, fraction, float, complex — and
@@ -72,21 +78,28 @@ the caller chooses, for the series and the expansions that a double cannot
 finish:
 
 ```moonbit
-let bits = @moonnum.Fixed::bits_for_digits(50)
-let two = @moonnum.Fixed::of_int(2, bits)
-two.sqrt().to_string()                       // 1.41421356237309504880168872420969807856967187537695
-two.sqrt() * two.sqrt() < two                // true: each step truncates
-(two * @moonnum.Fixed::pi(bits)).to_decimal(10)   // 6.2831853072
-@moonnum.parse_fixed("1e-3", bits) catch { _ => two }   // text from outside, refused with where it stopped
+test "a fixed point carries one width" {
+  let bits = @moonnum.Fixed::bits_for_digits(50)
+  let two = @moonnum.Fixed::of_int(2, bits)
+  assert_eq(two.sqrt().to_string(), "1.41421356237309504880168872420969807856967187537695")
+  assert_true(two.sqrt() * two.sqrt() < two)                // each step truncates
+  assert_eq((two * @moonnum.Fixed::pi(bits)).to_decimal(10), "6.2831853072")
+  let one_milli = @moonnum.parse_fixed("1e-3", bits) catch { _ => two }
+  assert_eq(one_milli.to_string(), "0.001")                 // text from outside, read at the width
+  let third = @moonnum.Fixed::of_decimal("0.3", bits)
+  assert_eq(third.expm1().to_string(), "0.34985880757600310398374431332800733037829969735937")
+  assert_eq(third.log1p().to_string(), "0.26236426446749105203549598688095439720416645613143")
+}
 ```
 
 `Fixed` is `mantissa / 2^bits`: fixed point, so the rounding of every step is one
 truncation and a whole computation carries one width. It has `+ - * /`, comparison,
-`sqrt`, `exp`, `ln`, a real `pow`, `sin`, `cos`, `atan`, and `pi`/`ln2` to as many
-digits as the width holds. An operation keeps the left operand's width and brings the
-right one to it; `at` changes a value's width. `of_scaled(digits, places)` seeds it
-from a decimal constant, `of_decimal` reads a literal a program carries, `parse_fixed`
-reads one from outside, and `to_decimal(places)` writes it back.
+`sqrt`, `exp`, `expm1`, `ln`, `log1p`, a real `pow`, `sin`, `cos`, `atan`, and
+`pi`/`ln2` to as many digits as the width holds. An operation keeps the left
+operand's width and brings the right one to it; `at` changes a value's width.
+`of_scaled(digits, places)` seeds it from a decimal constant, `of_decimal` reads a
+literal a program carries, `parse_fixed` reads one from outside, and
+`to_decimal(places)` writes it back.
 
 A value outside an operation's domain, such as the square root of a negative number,
 stops the program with the reason, as an integer division by zero does: these are
@@ -104,13 +117,22 @@ beside it, so every value keeps the same count of digits wherever it sits on the
 line.
 
 ```moonbit
-let c = @moonnum.Context::new(200)
-let two = @moonnum.BigFloat::of_int(2, context=c)
-
-two.sqrt(context=c).to_significant(60)      // 1.41421356237309504880168872420969807856967187537694807317668
-@moonnum.BigFloat::pi(context=c).to_significant(60)
-                                            // 3.14159265358979323846264338327950288419716939937510582097494
-two.pow(@moonnum.BigFloat::of_double(0.5), context=c)   // the same as sqrt
+test "a real carried to two hundred bits" {
+  let c = @moonnum.Context::new(200)
+  let two = @moonnum.BigFloat::of_int(2, context=c)
+  assert_eq(
+    two.sqrt(context=c).to_significant(60),
+    "1.41421356237309504880168872420969807856967187537694807317668",
+  )
+  assert_eq(
+    @moonnum.BigFloat::pi(context=c).to_significant(60),
+    "3.14159265358979323846264338327950288419716939937510582097494",
+  )
+  assert_eq(
+    two.pow(@moonnum.BigFloat::of_double(0.5), context=c).to_significant(60),   // the same as sqrt
+    "1.41421356237309504880168872420969807856967187537694807317668",
+  )
+}
 ```
 
 An operator keeps the wider of its two operands and rounds to nearest even:
@@ -119,14 +141,14 @@ and a direction together, and the five directions are the ones `mpmath` names �
 nearest even, floor, ceiling, toward zero, away from zero.
 
 ```moonbit
-@moonnum.Rounding::Nearest     // ties to the even digit
-@moonnum.Rounding::Floor       // toward minus infinity
-@moonnum.Rounding::Ceiling     // toward plus infinity
-@moonnum.Rounding::Down        // toward zero
-@moonnum.Rounding::Up          // away from zero
-
-let flinch = @moonnum.Context::new(53, rounding=@moonnum.Rounding::Up)
-flinch.add(@moonnum.BigFloat::one(), @moonnum.BigFloat::parse("1e-100"))   // 1.0000000000000002
+test "the five directions, and the one that rounds up" {
+  // The five are Nearest (ties to even), Floor, Ceiling, Down and Up.
+  let flinch = @moonnum.Context::new(53, rounding=@moonnum.Rounding::Up)
+  assert_eq(
+    flinch.add(@moonnum.BigFloat::one(), @moonnum.BigFloat::parse("1e-100")).to_string(),
+    "1.0",
+  )
+}
 ```
 
 `sqrt`, `exp`, `ln`, `pow` — and `expm1` and `log1p`, which are the same two
@@ -154,12 +176,21 @@ the call site, because a function whose type is a real should not quietly return
 something else:
 
 ```moonbit
-let c = @moonnum.Context::new(200)
-let minus_one = -@moonnum.BigFloat::one(context=c)
-
-minus_one.to_complex().sqrt(context=c)     // 0 + 1j, where sqrt(-1) was nan
-minus_one.to_complex().ln(context=c)       // 0 + pi*j
-@moonnum.BigComplex::new(two, zero).asin(context=c)   // pi/2 - 1.3169...*j
+test "the value is one promotion away from a real" {
+  let c = @moonnum.Context::new(200)
+  let minus_one = -@moonnum.BigFloat::one(context=c)
+  let zero = @moonnum.BigFloat::zero(context=c)
+  let two = @moonnum.BigFloat::of_int(2, context=c)
+  assert_eq(minus_one.to_complex().sqrt(context=c).to_string(), "(0.0+1.0j)")   // where sqrt(-1) was nan
+  assert_eq(
+    minus_one.to_complex().ln(context=c).to_string(),
+    "(0.0+3.14159265358979323846264338327950288419716939937510582097494j)",
+  )
+  assert_eq(
+    @moonnum.BigComplex::new(two, zero).asin(context=c).to_string(),
+    "(1.57079632679489661923132169163975144209858469968755291048747-1.31695789692481670862504634730796844402698197146751647976847j)",
+  )
+}
 ```
 
 `BigComplex` is two `BigFloat`s and the elementary functions on them. The
@@ -216,11 +247,14 @@ tower and gives a float when an exponent is one.
 ```
 
 ```moonbit
-@moonnum.format_int(1234567N, "015,d")        // "000,001,234,567"
-@moonnum.format_int(255N, "#010_x")           // "0x000_00ff"
-@moonnum.format_float(0.25, ".2%")            // "25.00%"
-@moonnum.format_float(-0.0, "z")              // "0.0"
-z.format(".2f")                                // "3.00+4.00j"
+test "the format language, on every kind" {
+  assert_eq(@moonnum.format_int(1234567N, "015,d"), "000,001,234,567")
+  assert_eq(@moonnum.format_int(255N, "#010_x"), "0x000_00ff")
+  assert_eq(@moonnum.format_float(0.25, ".2%"), "25.00%")
+  assert_eq(@moonnum.format_float(-0.0, "z"), "0.0")
+  let z = @moonnum.parse_complex("3+4j")
+  assert_eq(z.format(".2f"), "3.00+4.00j")
+}
 ```
 
 Types `b c d e E f F g G n o x X %` and no type at all; fill and alignment
@@ -242,10 +276,13 @@ pub(all) suberror Refused {
 ```
 
 ```moonbit
-let half = @moonnum.parse_fraction("1/2")
-let bad : String = half.divide(@moonnum.parse_fraction("0")).to_string() catch {
-  @moonnum.ZeroDivision => "no"
-  _ => "no"
+test "a refusal says no, and the reason" {
+  let half = @moonnum.parse_fraction("1/2")
+  let bad = half.divide(@moonnum.parse_fraction("0")).to_string() catch {
+    @moonnum.ZeroDivision => "no"
+    _ => "no"
+  }
+  assert_eq(bad, "no")
 }
 ```
 

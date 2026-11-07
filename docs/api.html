@@ -255,6 +255,11 @@
 <div class="doc"><p><code>e^x</code>, by range reduction to <code>-ln(2)/2 .. ln(2)/2</code> and a Taylor series.</p></div>
 </div>
 <div class="item">
+<p class="sig">pub fn <span class="name">Fixed::expm1</span>(Self) -&gt; Self</p>
+<div class="doc"><p><code>e^x - 1</code>.</p>
+<p>For a small argument the exponential&#x27;s series, with the constant one left out of the sum, is the answer: the terms fall from <code>x</code> and it is a handful of them, and nothing is built that the answer does not carry. For a larger argument the exponential has grown far from one, and taking one off is a single truncation, so the ordinary exponential is called.</p></div>
+</div>
+<div class="item">
 <p class="sig">pub fn <span class="name">Fixed::is_zero</span>(Self) -&gt; Bool</p>
 <div class="doc"><p>Whether the value is exactly zero.</p></div>
 </div>
@@ -265,6 +270,12 @@
 <div class="item">
 <p class="sig">pub fn <span class="name">Fixed::ln2</span>(Int32) -&gt; Self</p>
 <div class="doc"><p><code>ln(2)</code> at the given width, <code>2 atanh(1/3)</code> past the width of the constant.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fixed::log1p</span>(Self) -&gt; Self</p>
+<div class="doc"><p><code>ln(1 + x)</code>.</p>
+<p>The two-argument form <code>ln(1 + x) = 2 atanh(x / (2 + x))</code> is summed from <code>x</code> directly: for <code>x</code> a half or less in magnitude the argument of the series is a third of <code>x</code> or less, so a few terms reach the width, and the value is built from <code>x</code> rather than from <code>1 + x</code>. Past a half the ordinary logarithm of <code>1 + x</code> is called instead.</p>
+<p>An argument at or below minus one has <code>1 + x</code> at or below zero, and the logarithm of that stops the program as the logarithm of a non-positive number does.</p></div>
 </div>
 <div class="item">
 <p class="sig">pub fn <span class="name">Fixed::of_decimal</span>(String, Int32) -&gt; Self</p>

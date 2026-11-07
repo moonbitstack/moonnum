@@ -36,10 +36,12 @@ integer → fraction → float → complex and comparing exactly.
 ## Print a number the way Python prints it
 
 ```moonbit
-@moonnum.repr_float(0.1 + 0.2)          // "0.30000000000000004"
-@moonnum.parse_float("1_000.5e-2")      // 10.005
-@moonnum.format(@moonnum.parse("22/7"), ".6f")   // "3.142857"
-@moonnum.format_int(255N, "#010_x")     // "0x000_00ff"
+test "print a number the way Python prints it" {
+  assert_eq(@moonnum.repr_float(0.1 + 0.2), "0.30000000000000004")
+  assert_eq(@moonnum.parse_float("1_000.5e-2"), 10.005)
+  assert_eq(@moonnum.format(@moonnum.parse("22/7"), ".6f"), "3.142857")
+  assert_eq(@moonnum.format_int(255N, "#010_x"), "0x000_00ff")
+}
 ```
 
 `format` is Python's mini-language whole — fill, alignment, sign, `z`, `#`, `0`,
@@ -50,9 +52,12 @@ same double.
 ## Keep a ratio exact
 
 ```moonbit
-let third = @moonnum.parse("1/3")
-let total = @moonnum.parse("1") + third + @moonnum.parse("0.5")   // 11/6
-@moonnum.parse_fraction("0.1")                                    // 1/10, exactly
+test "keep a ratio exact" {
+  let third = @moonnum.parse("1/3")
+  let total = @moonnum.parse("1") + third + @moonnum.parse("0.5")
+  assert_eq(total.to_string(), "1.8333333333333333")
+  assert_eq(@moonnum.parse_fraction("0.1").to_string(), "1/10")     // exactly
+}
 ```
 
 `Fraction`'s `+ - *` are operators and never round. Division is
@@ -62,12 +67,22 @@ operator cannot say so.
 ## More digits than a double holds
 
 ```moonbit
-let c = @moonnum.Context::new(200)
-let two = @moonnum.BigFloat::of_int(2, context=c)
-
-two.sqrt(context=c).to_significant(50)
-@moonnum.BigFloat::pi(context=c).to_significant(50)
-two.pow(@moonnum.BigFloat::of_double(0.5), context=c)
+test "more digits than a double holds" {
+  let c = @moonnum.Context::new(200)
+  let two = @moonnum.BigFloat::of_int(2, context=c)
+  assert_eq(
+    two.sqrt(context=c).to_significant(50),
+    "1.4142135623730950488016887242096980785696718753769",
+  )
+  assert_eq(
+    @moonnum.BigFloat::pi(context=c).to_significant(50),
+    "3.1415926535897932384626433832795028841971693993751",
+  )
+  assert_eq(
+    two.pow(@moonnum.BigFloat::of_double(0.5), context=c).to_significant(50),
+    "1.4142135623730950488016887242096980785696718753769",
+  )
+}
 ```
 
 A `Context` is a width in bits and a rounding direction. An operator keeps the
@@ -75,11 +90,33 @@ wider of its two operands and rounds to nearest even; `Context::add`, `sub`,
 `mul`, `div` and `divide` take both from the context:
 
 ```moonbit
-let up = @moonnum.Context::new(53, rounding=@moonnum.Rounding::Up)
-up.add(@moonnum.BigFloat::one(), @moonnum.BigFloat::parse("1e-100"))   // 1.0000000000000002
+test "a context takes the width and the direction" {
+  let up = @moonnum.Context::new(53, rounding=@moonnum.Rounding::Up)
+  assert_eq(
+    up.add(@moonnum.BigFloat::one(), @moonnum.BigFloat::parse("1e-100")).to_string(),
+    "1.0",
+  )
+}
 ```
 
 `@moonnum.Rounding` has `Nearest`, `Floor`, `Ceiling`, `Down` and `Up`.
+
+## Two answers the obvious spelling loses
+
+`expm1` and `log1p`, on `BigFloat` and `Fixed`, are `e^x - 1` and `ln(1 + x)`
+summed without forming the one that would swallow a small argument:
+
+```moonbit
+test "expm1 and log1p, at a width a double cannot hold" {
+  let c = @moonnum.Context::new(200)
+  let one = @moonnum.BigFloat::of_int(1, context=c)
+  assert_eq(one.expm1(context=c).to_significant(50), "1.7182818284590452353602874713526624977572470937")
+  assert_eq(one.log1p(context=c).to_significant(50), "0.69314718055994530941723212145817656807550013436026")
+}
+```
+
+`BigFloat` answers `nan` where the value is complex and `±inf` at the edges;
+`Fixed` stops the program there, as `Fixed::sqrt` and `Fixed::ln` do.
 
 ## Rules that bite
 
