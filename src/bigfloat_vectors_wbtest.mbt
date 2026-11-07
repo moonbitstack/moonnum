@@ -4583,5 +4583,10 @@ test "vec_bf_domain: 1 of 1" {
     ("exp", "-inf", "", "0.0"),
     ("exp", "inf", "", "inf"),
     ("ln", "inf", "", "inf"),
+    ("expm1", "-inf", "", "-1.0"),
+    ("expm1", "inf", "", "inf"),
+    ("log1p", "inf", "", "inf"),
+    ("log1p", "-1", "", "-inf"),
+    ("log1p", "-2", "", "nan"),
   ])
 }

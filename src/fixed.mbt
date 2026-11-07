@@ -255,6 +255,82 @@ pub fn Fixed::ln(self : Fixed) -> Fixed {
 }
 
 ///|
+/// `e^x - 1`.
+///
+/// For a small argument the exponential's series, with the constant one left
+/// out of the sum, is the answer: the terms fall from `x` and it is a handful
+/// of them, and nothing is built that the answer does not carry. For a larger
+/// argument the exponential has grown far from one, and taking one off is a
+/// single truncation, so the ordinary exponential is called.
+pub fn Fixed::expm1(self : Fixed) -> Fixed {
+  let bits = self.bits
+  if self.is_zero() {
+    return Fixed::zero(bits)
+  }
+  if self.abs().to_double() <= 0.5 {
+    let mut term = self
+    let mut sum = self
+    let mut n : Int32 = 1
+    while !term.is_zero() {
+      n = n + 1
+      term = term * self / Fixed::of_int(n, bits)
+      sum = sum + term
+    }
+    sum
+  } else {
+    self.exp() - Fixed::one(bits)
+  }
+}
+
+///|
+/// `ln(1 + x)`.
+///
+/// The two-argument form `ln(1 + x) = 2 atanh(x / (2 + x))` is summed from `x`
+/// directly: for `x` a half or less in magnitude the argument of the series is
+/// a third of `x` or less, so a few terms reach the width, and the value is
+/// built from `x` rather than from `1 + x`. Past a half the ordinary logarithm
+/// of `1 + x` is called instead.
+///
+/// An argument at or below minus one has `1 + x` at or below zero, and the
+/// logarithm of that stops the program as the logarithm of a non-positive number
+/// does.
+pub fn Fixed::log1p(self : Fixed) -> Fixed {
+  let bits = self.bits
+  if self <= Fixed::of_int(-1, bits) {
+    abort("Fixed::log1p: the argument is at or below minus one")
+  }
+  if self.is_zero() {
+    return Fixed::zero(bits)
+  }
+  let one = Fixed::one(bits)
+  if self.abs().to_double() <= 0.5 {
+    // Sum the odd series on the magnitude: `|z| < 1`, so every term is
+    // positive and truncates to zero, whereas a negative `z` under `>>`
+    // (which floors) would settle on `-1` and never reach zero.
+    let z = self / (one + one + self)
+    let negative = z.mantissa < 0N
+    let magnitude = z.abs()
+    let squared = magnitude * magnitude
+    let mut term = magnitude
+    let mut sum = magnitude
+    let mut i : Int32 = 0
+    while !term.is_zero() {
+      i = i + 1
+      term = term * squared
+      sum = sum + term / Fixed::of_int(2 * i + 1, bits)
+    }
+    let answer = sum * Fixed::of_int(2, bits)
+    if negative {
+      -answer
+    } else {
+      answer
+    }
+  } else {
+    (one + self).ln()
+  }
+}
+
+///|
 /// The largest integer not above the value.
 fn Fixed::floor_to_int(self : Fixed) -> Int32 {
   (self.mantissa >> self.bits).to_int()

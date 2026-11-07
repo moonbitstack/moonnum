@@ -267,6 +267,53 @@ test "panic the square root of a negative number stops" {
 }
 
 ///|
+test "expm1 is exp minus one, and log1p is ln of one plus, away from zero" {
+  let bits = Fixed::bits_for_digits(50)
+  let tolerance = Fixed::of_scaled("1", 45, bits)
+  // Far from zero, where the answer is the ordinary function with one taken
+  // off or added, the two spellings agree to the width.
+  let ten = Fixed::of_int(10, bits)
+  let expm1 = ten.expm1()
+  assert_true(expm1.approx(ten.exp() - Fixed::one(bits), tolerance))
+  let log1p = ten.log1p()
+  assert_true(log1p.approx((Fixed::one(bits) + ten).ln(), tolerance))
+  // And the identities that hold everywhere: `expm1(x) + 1` is `exp(x)` and
+  // `log1p(e^x - 1)` is `x`.
+  let small = Fixed::of_decimal("0.3", bits)
+  assert_true((small.expm1() + Fixed::one(bits)).approx(small.exp(), tolerance))
+  assert_true(small.expm1().log1p().approx(small, tolerance))
+}
+
+///|
+test "expm1 of a small argument is the argument to the width" {
+  let bits = Fixed::bits_for_digits(50)
+  let tolerance = Fixed::of_scaled("1", 45, bits)
+  let tiny = Fixed::of_decimal("1e-40", bits)
+  // The series summed from `x` is a few terms, and the answer is `x` to the
+  // width; it is not swallowed to zero.
+  assert_true(tiny.expm1().approx(tiny, tolerance))
+  // And it agrees with the long spelling at this width.
+  assert_true(tiny.expm1().approx(tiny.exp() - Fixed::one(bits), tolerance))
+}
+
+///|
+test "expm1 of zero is zero and log1p of zero is zero" {
+  let bits = Fixed::bits_for_digits(50)
+  assert_true(Fixed::zero(bits).expm1() == Fixed::zero(bits))
+  assert_true(Fixed::zero(bits).log1p() == Fixed::zero(bits))
+}
+
+///|
+test "panic the logarithm of one plus minus one stops" {
+  ignore(Fixed::of_int(-1, 64).log1p())
+}
+
+///|
+test "panic the logarithm of one plus below minus one stops" {
+  ignore(Fixed::of_int(-2, 64).log1p())
+}
+
+///|
 test "panic the logarithm of zero stops" {
   ignore(Fixed::zero(64).ln())
 }
