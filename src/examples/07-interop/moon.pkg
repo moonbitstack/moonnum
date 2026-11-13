@@ -1,0 +1,8 @@
+// A runnable example, and the program the interoperability check drives:
+// `python scripts/check_interop.py`.
+pkgtype(kind: "executable")
+
+import {
+  "moonbitlang/core/bigint",
+  "moonbitstack/moonnum",
+}
