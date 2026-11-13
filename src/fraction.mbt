@@ -235,6 +235,24 @@ pub fn Fraction::denominator(self : Fraction) -> @bigint.BigInt {
 }
 
 ///|
+/// `Fraction.as_integer_ratio`: the pair `(numerator, denominator)`, the same
+/// two values the fields hold, in the order Python hands them out.
+pub fn Fraction::as_integer_ratio(
+  self : Fraction,
+) -> (@bigint.BigInt, @bigint.BigInt) {
+  (self.num, self.den)
+}
+
+///|
+/// The value with its fractional part dropped, towards zero: `math.trunc`.
+///
+/// Core's integer division truncates, so the whole part is one division; the
+/// sign falls out of it because the denominator is always positive.
+pub fn Fraction::trunc_big(self : Fraction) -> @bigint.BigInt {
+  self.num / self.den
+}
+
+///|
 /// The same value without its sign.
 pub fn Fraction::abs(self : Fraction) -> Fraction {
   if self.num < 0N {

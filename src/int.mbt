@@ -286,6 +286,40 @@ pub fn lcm(a : @bigint.BigInt, b : @bigint.BigInt) -> @bigint.BigInt {
 }
 
 ///|
+/// The gcd and the two coefficients that spell it: `(g, x, y)` with
+/// `a * x + b * y == g` and `g` non-negative.
+///
+/// This is the extended Euclidean algorithm, the same walk `inverse_mod` makes
+/// with only one column kept. Both zero gives `(0, 1, 0)`, the coefficient pair
+/// that satisfies the identity for the only case with no gcd to speak of.
+pub fn gcd_ext(
+  a : @bigint.BigInt,
+  b : @bigint.BigInt,
+) -> (@bigint.BigInt, @bigint.BigInt, @bigint.BigInt) {
+  let mut old_r = if a < 0N { -a } else { a }
+  let mut r = if b < 0N { -b } else { b }
+  let mut old_s = 1N
+  let mut s = 0N
+  let mut old_t = 0N
+  let mut t = 1N
+  while r != 0N {
+    let q = old_r / r
+    let next_r = old_r - q * r
+    old_r = r
+    r = next_r
+    let next_s = old_s - q * s
+    old_s = s
+    s = next_s
+    let next_t = old_t - q * t
+    old_t = t
+    t = next_t
+  }
+  let x = if a < 0N { -old_s } else { old_s }
+  let y = if b < 0N { -old_t } else { old_t }
+  (old_r, x, y)
+}
+
+///|
 /// `math.isqrt(n)`: the floor of the square root.
 pub fn isqrt(n : @bigint.BigInt) -> @bigint.BigInt raise Refused {
   if n < 0N {
@@ -312,13 +346,31 @@ pub fn factorial(n : @bigint.BigInt) -> @bigint.BigInt raise Refused {
   if n < 0N {
     raise Domain(reason="factorial() of a negative number")
   }
-  let mut result = 1N
-  let mut i = 2N
-  while i <= n {
-    result = result * i
-    i += 1N
+  product_range(2N, n)
+}
+
+///|
+/// The product of `lo` through `hi`, by halving.
+///
+/// Multiplying a thousand small numbers one at a time keeps the running product
+/// small for one step and large for the rest; halving makes every product the
+/// same size, which is the difference between a second and a few minutes at the
+/// sizes a factorial is asked for.
+fn product_range(lo : @bigint.BigInt, hi : @bigint.BigInt) -> @bigint.BigInt {
+  if lo > hi {
+    return 1N
   }
-  result
+  if hi - lo <= 8N {
+    let mut product = 1N
+    let mut i = lo
+    while i <= hi {
+      product = product * i
+      i += 1N
+    }
+    return product
+  }
+  let middle = (lo + hi) >> 1
+  product_range(lo, middle) * product_range(middle + 1N, hi)
 }
 
 ///|
@@ -369,6 +421,80 @@ pub fn perm(
 /// The number of bits needed to represent `n`, sign excluded: `int.bit_length`.
 pub fn bit_length(n : @bigint.BigInt) -> Int32 {
   n.bit_length()
+}
+
+///|
+/// The number of one bits in the magnitude of `n`: `int.bit_count`.
+///
+/// Python counts the absolute value, so `bit_count(-7)` is three and
+/// `bit_count(-1)` is one. The count is read off the hexadecimal spelling, four
+/// bits per character, rather than asking for one shift and one test per bit.
+pub fn bit_count(n : @bigint.BigInt) -> Int32 {
+  let magnitude = if n < 0N { -n } else { n }
+  let hex = magnitude.to_string(radix=16)
+  let mut total = 0
+  for i = 0; i < hex.length(); i = i + 1 {
+    let c = hex.get_char(i).unwrap()
+    let nibble = if c >= 'a' {
+      c.to_int() - 'a'.to_int() + 10
+    } else {
+      c.to_int() - '0'.to_int()
+    }
+    total = total +
+      (nibble & 1) +
+      ((nibble >> 1) & 1) +
+      ((nibble >> 2) & 1) +
+      ((nibble >> 3) & 1)
+  }
+  total
+}
+
+///|
+/// `n` written in any radix from 2 to 36, lowercase, with a leading `-` when
+/// negative.
+///
+/// This is the writing side of `parse_int`'s `base`: `to_radix(n, radix=16)` is
+/// `hex(n)` without the prefix, and `parse_int(to_radix(n, radix=b), base=b)`
+/// reads the same number back for every `b`.
+pub fn to_radix(
+  n : @bigint.BigInt,
+  radix~ : Int32 = 10,
+) -> String raise Refused {
+  if radix < 2 || radix > 36 {
+    raise Domain(reason="radix must be between 2 and 36")
+  }
+  n.to_string(radix~)
+}
+
+///|
+/// The floor of the logarithm of `|n|` in `base`, for `base >= 2`.
+///
+/// The answer is an integer exponent, so `ilog(1000, base=10)` is three and the
+/// count of decimal digits of `n` is `ilog(n) + 1`. Zero has no logarithm and is
+/// refused, as is a base below two.
+pub fn ilog(
+  n : @bigint.BigInt,
+  base~ : @bigint.BigInt = 10N,
+) -> Int32 raise Refused {
+  if base < 2N {
+    raise Domain(reason="ilog() base must be at least 2")
+  }
+  if n == 0N {
+    raise Domain(reason="ilog() of zero")
+  }
+  let magnitude = if n < 0N { -n } else { n }
+  // A radix the writer knows gives the digit count in one pass; a larger base
+  // has no spelling, so the powers are counted instead.
+  if base <= 36N {
+    return magnitude.to_string(radix=base.to_int()).length() - 1
+  }
+  let mut power = 1N
+  let mut exponent = 0
+  while power * base <= magnitude {
+    power = power * base
+    exponent = exponent + 1
+  }
+  exponent
 }
 
 ///|

@@ -239,6 +239,49 @@ def gen_bytes() -> list[tuple]:
     return rows
 
 
+def gen_bit_count() -> list[tuple]:
+    rows = []
+    values = [
+        "0", "1", "2", "3", "7", "8", "255", "256", "1023", "1024",
+        "-1", "-2", "-7", "-8", "-255", "-256", "-1024",
+        "123456789012345678901234567890",
+        "-123456789012345678901234567890",
+        str(2**256 - 1), str(-(2**256 - 1)), str(2**256), "170141183460469231731687303715884105727",
+    ]
+    for text in values:
+        rows.append((text, int(text).bit_count()))
+    return rows
+
+
+def gen_is_integer() -> list[tuple]:
+    rows = []
+    values = [
+        "0.0", "-0.0", "1.0", "-1.0", "1.5", "-1.5", "2.0", "0.1", "0.5",
+        "4503599627370496.0", "4503599627370497.0", "1e300", "-1e300",
+        "1e-320", "-1e-320", "1.7976931348623157e308", "5e-324",
+        "inf", "-inf", "nan", "123456789012345680000.0",
+    ]
+    for text in values:
+        rows.append((text, float(text).is_integer()))
+    return rows
+
+
+def gen_fraction_ratio() -> list[tuple]:
+    rows = []
+    values = [
+        "3/4", "-3/4", "6/8", "-7/2", "7/2", "0/5", "0/-5", "7", "-7",
+        "1.5", "-1.5", "1e-3", "123456789/987654321", "-123456789/987654321",
+    ]
+    for text in values:
+        try:
+            value = Fraction(text)
+        except ValueError:
+            continue
+        number, denominator = value.as_integer_ratio()
+        rows.append((text, str(number), str(denominator), str(math.trunc(value))))
+    return rows
+
+
 def gen_parse_float() -> list[tuple]:
     rows = []
     cases = [
@@ -678,6 +721,10 @@ def main() -> None:
     out += lines("vec_pow", gen_pow(), "String, String, String, String")
     out += lines("vec_int_math", gen_int_math(), "String, String, String, String")
     out += lines("vec_bytes", gen_bytes(), "String, Int32, Bool, Bool, String")
+    out += lines("vec_bit_count", gen_bit_count(), "String, Int32")
+    out += lines("vec_is_integer", gen_is_integer(), "String, Bool")
+    out += lines("vec_fraction_ratio", gen_fraction_ratio(),
+                 "String, String, String, String")
     out += lines("vec_parse_float", gen_parse_float(), "String, String")
     out += lines("vec_repr", gen_repr(), "String, String")
     hex_out, hex_in = gen_hex()

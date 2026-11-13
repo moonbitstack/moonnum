@@ -44,6 +44,12 @@ pub fn BigFloat::pi(context? : Context) -> BigFloat {
 }
 
 ///|
+/// `ln(10)`, as the logarithm of the ten the logarithm function already reads.
+fn ln10_at(width : Int32) -> BigFloat {
+  ln_at(BigFloat::of_int(10, context=Context::new(width)), width)
+}
+
+///|
 /// `e` at the width and rounding of `context`, as `exp(1)` — not a table.
 pub fn BigFloat::e(context? : Context) -> BigFloat {
   let c = context_of(context, context_default)

@@ -110,3 +110,25 @@ test "a float round-trips through its own text" {
     }
   }
 }
+
+///|
+fn check_is_integer(rows : Array[(String, Bool)]) -> Unit raise {
+  for row in rows {
+    let (text, want) = row
+    let value = parse_float(text) catch { _ => continue }
+    let got = is_integer(value)
+    if got != want {
+      fail("is_integer(\{text}) is \{got}, want \{want}")
+    }
+  }
+}
+
+///|
+test "a whole number and one that is not" {
+  if !is_integer(-0.0) || !is_integer(2.0) || !is_integer(1.0e300) {
+    fail("whole values should say so, including a negative zero")
+  }
+  if is_integer(0.5) || is_integer(0.1) {
+    fail("a value with a fractional part is not an integer")
+  }
+}

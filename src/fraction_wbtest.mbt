@@ -78,3 +78,20 @@ test "a decimal literal is a power of ten, not a float" {
     fail("0.1 parsed as \{tenth}")
   }
 }
+
+///|
+fn check_fraction_ratio(
+  rows : Array[(String, String, String, String)],
+) -> Unit raise {
+  for row in rows {
+    let (text, want_num, want_den, want_trunc) = row
+    let value = parse_fraction(text) catch { _ => continue }
+    let (num, den) = value.as_integer_ratio()
+    check(
+      "as_integer_ratio(\{text})",
+      num.to_string() + "/" + den.to_string(),
+      want_num + "/" + want_den,
+    )
+    check("trunc(\{text})", value.trunc_big().to_string(), want_trunc)
+  }
+}

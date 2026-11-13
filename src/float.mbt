@@ -471,6 +471,19 @@ pub fn as_integer_ratio(
 }
 
 ///|
+/// `float.is_integer`: whether `d` has no fractional part.
+///
+/// An infinity and a NaN are not integers and answer `false` rather than
+/// raising, which is what the reference does: the question is about the value's
+/// shape, and both are shapes that are not whole numbers.
+pub fn is_integer(d : Double) -> Bool {
+  if d.is_nan() || d.is_inf() {
+    return false
+  }
+  d == @double.trunc(d)
+}
+
+///|
 /// `d` as an exact fraction.
 pub fn as_ratio(d : Double) -> Fraction raise Refused {
   if d.is_nan() {

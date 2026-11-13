@@ -160,6 +160,9 @@ TRANSCENDENTAL = {
     "expm1": ["1", "-1", "0.5", "-0.5", "1e-16", "100", "-100"],
     "log1p": ["1", "0.5", "-0.5", "9.99999999999e-1", "1e10", "-1e-16"],
     "sqrt": ["2", "10", "0.5", "3e-30", "1e100"],
+    "cbrt": ["2", "-8", "0.001", "1e30", "27"],
+    "log2": ["2", "10", "0.5", "1e-10", "1024"],
+    "log10": ["10", "2", "0.001", "1e30", "0.5"],
     "sin": ["1", "-2.5", "0.001", "100", "3"],
     "cos": ["1", "-2.5", "0.001", "100", "3"],
     "tan": ["1", "-2.5", "0.001", "100"],
@@ -180,6 +183,9 @@ APPLY = {
     "expm1": mp.expm1,
     "log1p": mp.log1p,
     "sqrt": mp.sqrt,
+    "cbrt": lambda x: mp.cbrt(x) if x >= 0 else -mp.cbrt(-x),
+    "log2": lambda x: mp.log(x, 2),
+    "log10": lambda x: mp.log(x, 10),
     "sin": mp.sin,
     "cos": mp.cos,
     "tan": mp.tan,
@@ -195,6 +201,14 @@ APPLY = {
 }
 
 POWERS = [("2", "0.5"), ("10", "3.3"), ("2", "-0.5"), ("7", "2"), ("1.5", "-7.25")]
+
+HYPOTS = [("3", "4"), ("1", "1"), ("-3", "4"), ("0.001", "0.002"),
+          ("1e20", "1e20"), ("0", "7")]
+
+NTH_ROOTS = [("2", 5), ("32", 5), ("-32", 5), ("-32", 6), ("0.00032", 5),
+             ("2", 1), ("10", 4)]
+
+POWIS = [("2", 10), ("2", -3), ("-3", 5), ("1.5", 3), ("0.5", -2), ("7", 0)]
 
 TEXTS = [
     "1", "0.1", "-0.1", "1e-40", "1e40", "3.14159265358979323846",
@@ -346,6 +360,44 @@ def rows_transcendental(name: str, width: int) -> list[str]:
     return lines
 
 
+def rows_hypot(width: int) -> list[str]:
+    """Two legs and the length of the hypotenuse they carry."""
+    lines = []
+    for a, b in HYPOTS:
+        x, y = narrow(mp.mpf(a), width), narrow(mp.mpf(b), width)
+        answer = at(width + 64, NEAREST, lambda: mp.hypot(x, y))
+        lines.append("    (%s, %s, %s)," % (
+            esc(a), esc(b), esc(exact_decimal(answer))))
+    return lines
+
+
+def rows_nth_root(width: int) -> list[str]:
+    """A root asked for by a whole degree, odd and even, of both signs."""
+    lines = []
+    for a, n in NTH_ROOTS:
+        x = narrow(mp.mpf(a), width)
+        if x < 0 and n % 2 == 0:
+            # Not a real number, which is what the library answers too.
+            lines.append("    (%s, %d, %s)," % (esc(a), n, esc("nan")))
+            continue
+        answer = at(width + 64, NEAREST, lambda: mp.root(x, n) if x >= 0
+                    else -mp.root(-x, n))
+        lines.append("    (%s, %d, %s)," % (
+            esc(a), n, esc(exact_decimal(answer))))
+    return lines
+
+
+def rows_powi(width: int) -> list[str]:
+    """A power whose exponent is a whole number, positive and negative."""
+    lines = []
+    for a, n in POWIS:
+        x = narrow(mp.mpf(a), width)
+        answer = at(width + 64, NEAREST, lambda: mp.power(x, n))
+        lines.append("    (%s, %s, %s)," % (
+            esc(a), esc(str(n)), esc(exact_decimal(answer))))
+    return lines
+
+
 def rows_pow(width: int) -> list[str]:
     lines = []
     for base, exponent in POWERS:
@@ -358,7 +410,8 @@ def rows_pow(width: int) -> list[str]:
 
 def rows_constants(width: int) -> list[str]:
     lines = []
-    for name, value in [("pi", mp.pi), ("e", mp.e), ("ln2", mp.log(2))]:
+    for name, value in [("pi", mp.pi), ("e", mp.e), ("ln2", mp.log(2)),
+                        ("ln10", mp.log(10))]:
         with mp.workprec(width + 64):
             answer = +value
         lines.append("    (%s, %s)," % (esc(name), esc(exact_decimal(answer))))
@@ -434,6 +487,12 @@ def main() -> int:
                   rows_transcendental(name, width))
         block("vec_bf_pow at %d bits: 1 of 1" % width,
               "check_bf_pow(%d, [" % width, rows_pow(width))
+        block("vec_bf_hypot at %d bits: 1 of 1" % width,
+              "check_bf_hypot(%d, [" % width, rows_hypot(width))
+        block("vec_bf_nth_root at %d bits: 1 of 1" % width,
+              "check_bf_nth_root(%d, [" % width, rows_nth_root(width))
+        block("vec_bf_powi at %d bits: 1 of 1" % width,
+              "check_bf_powi(%d, [" % width, rows_powi(width))
         block("vec_bf_constants at %d bits: 1 of 1" % width,
               "check_bf_constants(%d, [" % width, rows_constants(width))
         block("vec_bf_text at %d bits: 1 of 1" % width,

@@ -367,3 +367,59 @@ pub fn BigFloat::pow(
   let c = context_of(context, inherited(self, exponent))
   directed(precision => pow_at(self, exponent, precision), c)
 }
+
+///|
+/// `base ^ exponent` for a whole exponent, by squaring.
+///
+/// A whole exponent needs multiplication and nothing else: `pow` would take a
+/// logarithm, multiply, and exponentiate again, which costs accuracy at the last
+/// bit and time everywhere. A negative exponent is the reciprocal of the
+/// positive power, rounded once at the end.
+fn powi_at(
+  base : BigFloat,
+  exponent : @bigint.BigInt,
+  precision : Int32,
+) -> BigFloat {
+  if exponent == 0N {
+    return finite_at(1N, 0, precision)
+  }
+  if base.is_nan() {
+    return nan_at(precision)
+  }
+  let width = working(precision)
+  let c = Context::new(width)
+  let magnitude = if exponent < 0N { -exponent } else { exponent }
+  let mut result = BigFloat::one(context=c)
+  let mut factor = base
+  let mut left = magnitude
+  while left > 0N {
+    if left % 2N != 0N {
+      result = c.mul(result, factor)
+    }
+    left = left >> 1
+    if left > 0N {
+      factor = c.mul(factor, factor)
+    }
+  }
+  let positive = if exponent < 0N {
+    c.div(BigFloat::one(context=c), result)
+  } else {
+    result
+  }
+  positive.round(context=Context::new(precision))
+}
+
+///|
+/// `self` raised to a whole exponent, at the context's width and direction.
+///
+/// `BigFloat::pow` also accepts a fractional exponent and pays for it; this is
+/// the whole one, kept exact until the final rounding, and the one to reach for
+/// when the exponent came from a count.
+pub fn BigFloat::powi(
+  self : BigFloat,
+  exponent : @bigint.BigInt,
+  context? : Context,
+) -> BigFloat {
+  let c = context_of(context, inherited_unary(self))
+  directed(precision => powi_at(self, exponent, precision), c)
+}

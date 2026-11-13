@@ -10,6 +10,8 @@ pub fn as_integer_ratio(Double) -> (@bigint.BigInt, @bigint.BigInt) raise Refuse
 
 pub fn as_ratio(Double) -> Fraction raise Refused
 
+pub fn bit_count(@bigint.BigInt) -> Int32
+
 pub fn bit_length(@bigint.BigInt) -> Int32
 
 pub fn ceil_big(Double) -> @bigint.BigInt raise Refused
@@ -39,6 +41,12 @@ pub fn format_float(Double, StringView) -> String raise Refused
 pub fn format_int(@bigint.BigInt, StringView) -> String raise Refused
 
 pub fn gcd(@bigint.BigInt, @bigint.BigInt) -> @bigint.BigInt
+
+pub fn gcd_ext(@bigint.BigInt, @bigint.BigInt) -> (@bigint.BigInt, @bigint.BigInt, @bigint.BigInt)
+
+pub fn ilog(@bigint.BigInt, base? : @bigint.BigInt) -> Int32 raise Refused
+
+pub fn is_integer(Double) -> Bool
 
 pub fn isqrt(@bigint.BigInt) -> @bigint.BigInt raise Refused
 
@@ -73,6 +81,8 @@ pub fn round_big(Double) -> @bigint.BigInt raise Refused
 pub fn round_float(Double, ndigits~ : Int32) -> Double
 
 pub fn to_bytes(@bigint.BigInt, length~ : Int32, big? : Bool, signed? : Bool) -> Bytes raise Refused
+
+pub fn to_radix(@bigint.BigInt, radix? : Int32) -> String raise Refused
 
 pub fn trunc_big(Double) -> @bigint.BigInt raise Refused
 
@@ -148,6 +158,7 @@ pub fn BigFloat::asin(Self, context? : Context) -> Self
 pub fn BigFloat::asinh(Self, context? : Context) -> Self
 pub fn BigFloat::atan(Self, context? : Context) -> Self
 pub fn BigFloat::atanh(Self, context? : Context) -> Self
+pub fn BigFloat::cbrt(Self, context? : Context) -> Self
 pub fn BigFloat::compare(Self, Self) -> Int32
 pub fn BigFloat::cos(Self, context? : Context) -> Self
 pub fn BigFloat::cosh(Self, context? : Context) -> Self
@@ -158,6 +169,7 @@ pub fn BigFloat::e(context? : Context) -> Self
 pub fn BigFloat::equal(Self, Self) -> Bool
 pub fn BigFloat::exp(Self, context? : Context) -> Self
 pub fn BigFloat::expm1(Self, context? : Context) -> Self
+pub fn BigFloat::hypot(Self, Self, context? : Context) -> Self
 pub fn BigFloat::infinity() -> Self
 pub fn BigFloat::is_finite(Self) -> Bool
 pub fn BigFloat::is_infinite(Self) -> Bool
@@ -165,13 +177,17 @@ pub fn BigFloat::is_nan(Self) -> Bool
 pub fn BigFloat::is_zero(Self) -> Bool
 pub fn BigFloat::kind(Self) -> Kind
 pub fn BigFloat::ln(Self, context? : Context) -> Self
+pub fn BigFloat::ln10(context? : Context) -> Self
 pub fn BigFloat::ln2(context? : Context) -> Self
+pub fn BigFloat::log10(Self, context? : Context) -> Self
 pub fn BigFloat::log1p(Self, context? : Context) -> Self
+pub fn BigFloat::log2(Self, context? : Context) -> Self
 pub fn BigFloat::mul(Self, Self) -> Self
 pub fn BigFloat::nan() -> Self
 pub fn BigFloat::neg(Self) -> Self
 pub fn BigFloat::negative_infinity() -> Self
 pub fn BigFloat::not_equal(Self, Self) -> Bool
+pub fn BigFloat::nth_root(Self, Int32, context? : Context) -> Self
 pub fn BigFloat::of_bigint(@bigint.BigInt, context? : Context) -> Self
 pub fn BigFloat::of_double(Double) -> Self
 pub fn BigFloat::of_fixed(Fixed, context? : Context) -> Self
@@ -185,6 +201,7 @@ pub fn BigFloat::output(Self, &Logger) -> Unit
 pub fn BigFloat::parse(StringView, context? : Context) -> Self raise Refused
 pub fn BigFloat::pi(context? : Context) -> Self
 pub fn BigFloat::pow(Self, Self, context? : Context) -> Self
+pub fn BigFloat::powi(Self, @bigint.BigInt, context? : Context) -> Self
 pub fn BigFloat::precision(Self) -> Int32
 pub fn BigFloat::round(Self, context? : Context) -> Self
 pub fn BigFloat::sign(Self) -> Int32
@@ -312,6 +329,7 @@ pub(all) struct Fraction {
 }
 pub fn Fraction::abs(Self) -> Self
 pub fn Fraction::add(Self, Self) -> Self
+pub fn Fraction::as_integer_ratio(Self) -> (@bigint.BigInt, @bigint.BigInt)
 pub fn Fraction::ceil_big(Self) -> @bigint.BigInt
 pub fn Fraction::compare(Self, Self) -> Int32
 pub fn Fraction::default() -> Self
@@ -343,6 +361,7 @@ pub fn Fraction::round_big(Self) -> @bigint.BigInt
 pub fn Fraction::sub(Self, Self) -> Self
 pub fn Fraction::to_double(Self) -> Double raise Refused
 pub fn Fraction::to_string(Self) -> String
+pub fn Fraction::trunc_big(Self) -> @bigint.BigInt
 pub impl Add for Fraction
 pub impl Compare for Fraction
 pub impl Default for Fraction

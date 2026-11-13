@@ -370,6 +370,10 @@
 <p>At one the answer is unbounded and the two infinities are the answer; past it there is no real value.</p></div>
 </div>
 <div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::cbrt</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p>The cube root: <code>cbrt</code>, and <code>nth_root</code> with an exponent of three.</p></div>
+</div>
+<div class="item">
 <p class="sig">pub fn <span class="name">BigFloat::cos</span>(Self, context? : Context) -&gt; Self</p>
 <div class="doc"><p>The cosine, at the context&#x27;s width and direction.</p></div>
 </div>
@@ -397,6 +401,11 @@
 <div class="item">
 <p class="sig">pub fn <span class="name">BigFloat::expm1</span>(Self, context? : Context) -&gt; Self</p>
 <div class="doc"><p><code>e^x - 1</code> at the context&#x27;s width and direction.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::hypot</span>(Self, Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p>The square root of the sum of the squares, without the overflow an intermediate square would carry: <code>math.hypot</code>.</p>
+<p>An infinity on either side answers an infinity even when the other is a NaN, which is the one place where the two wrong values do not stay wrong.</p></div>
 </div>
 <div class="item">
 <p class="sig">pub fn <span class="name">BigFloat::infinity</span>() -&gt; Self</p>
@@ -427,12 +436,25 @@
 <div class="doc"><p>The logarithm at the context&#x27;s width and direction.</p></div>
 </div>
 <div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::ln10</span>(context? : Context) -&gt; Self</p>
+<div class="doc"><p><code>ln(10)</code> at the context&#x27;s width and direction.</p></div>
+</div>
+<div class="item">
 <p class="sig">pub fn <span class="name">BigFloat::ln2</span>(context? : Context) -&gt; Self</p>
 <div class="doc"><p><code>ln(2)</code> at the width and rounding of <code>context</code>.</p></div>
 </div>
 <div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::log10</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p><code>log10</code>: the logarithm in base ten.</p></div>
+</div>
+<div class="item">
 <p class="sig">pub fn <span class="name">BigFloat::log1p</span>(Self, context? : Context) -&gt; Self</p>
 <div class="doc"><p><code>ln(1 + x)</code> at the context&#x27;s width and direction.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::log2</span>(Self, context? : Context) -&gt; Self</p>
+<div class="doc"><p><code>log2</code>: the logarithm in base two.</p>
+<p>The ratio of two logarithms, each at the working width, so the quotient is wrong only in the last place its own width speaks for.</p></div>
 </div>
 <div class="item">
 <p class="sig">pub fn <span class="name">BigFloat::nan</span>() -&gt; Self</p>
@@ -441,6 +463,11 @@
 <div class="item">
 <p class="sig">pub fn <span class="name">BigFloat::negative_infinity</span>() -&gt; Self</p>
 <div class="doc"><p>The same, below zero.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::nth_root</span>(Self, Int32, context? : Context) -&gt; Self</p>
+<div class="doc"><p>The <code>n</code>-th root, for <code>n &gt;= 1</code>.</p>
+<p>A zero or negative <code>n</code> has no root and answers NaN; so does an even root of a negative number, which is the same answer <code>sqrt</code> gives.</p></div>
 </div>
 <div class="item">
 <p class="sig">pub fn <span class="name">BigFloat::of_bigint</span>(@bigint.BigInt, context? : Context) -&gt; Self</p>
@@ -476,6 +503,11 @@
 <p class="sig">pub fn <span class="name">BigFloat::pow</span>(Self, Self, context? : Context) -&gt; Self</p>
 <div class="doc"><p><code>base</code> raised to <code>exponent</code>, at the context&#x27;s width and direction.</p>
 <p>A negative base with a fractional exponent has no real value and answers NaN, as does anything that would need the logarithm of a negative number.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">BigFloat::powi</span>(Self, @bigint.BigInt, context? : Context) -&gt; Self</p>
+<div class="doc"><p><code>self</code> raised to a whole exponent, at the context&#x27;s width and direction.</p>
+<p><code>BigFloat::pow</code> also accepts a fractional exponent and pays for it; this is the whole one, kept exact until the final rounding, and the one to reach for when the exponent came from a count.</p></div>
 </div>
 <div class="item">
 <p class="sig">pub fn <span class="name">BigFloat::precision</span>(Self) -&gt; Int32</p>
@@ -753,6 +785,10 @@
 <div class="doc"><p>The same value without its sign.</p></div>
 </div>
 <div class="item">
+<p class="sig">pub fn <span class="name">Fraction::as_integer_ratio</span>(Self) -&gt; (@bigint.BigInt, @bigint.BigInt)</p>
+<div class="doc"><p><code>Fraction.as_integer_ratio</code>: the pair <code>(numerator, denominator)</code>, the same two values the fields hold, in the order Python hands them out.</p></div>
+</div>
+<div class="item">
 <p class="sig">pub fn <span class="name">Fraction::ceil_big</span>(Self) -&gt; @bigint.BigInt</p>
 <div class="doc"><p><code>math.ceil</code>, as an integer.</p></div>
 </div>
@@ -825,6 +861,11 @@
 <div class="item">
 <p class="sig">pub fn <span class="name">Fraction::to_double</span>(Self) -&gt; Double raise Refused</p>
 <div class="doc"><p>The nearest double, or <code>Overflow</code> when the value does not fit.</p></div>
+</div>
+<div class="item">
+<p class="sig">pub fn <span class="name">Fraction::trunc_big</span>(Self) -&gt; @bigint.BigInt</p>
+<div class="doc"><p>The value with its fractional part dropped, towards zero: <code>math.trunc</code>.</p>
+<p>Core&#x27;s integer division truncates, so the whole part is one division; the sign falls out of it because the denominator is always positive.</p></div>
 </div>
 </section>
 

@@ -130,6 +130,9 @@ fn unary_of(name : String, value : BigFloat, c : Context) -> BigFloat raise {
     "expm1" => value.expm1(context=c)
     "log1p" => value.log1p(context=c)
     "sqrt" => value.sqrt(context=c)
+    "cbrt" => value.cbrt(context=c)
+    "log2" => value.log2(context=c)
+    "log10" => value.log10(context=c)
     "sin" => value.sin(context=c)
     "cos" => value.cos(context=c)
     "tan" => value.tan(context=c)
@@ -187,6 +190,7 @@ fn check_bf_constants(
     let got = match name {
       "pi" => BigFloat::pi(context=c)
       "e" => BigFloat::e(context=c)
+      "ln10" => BigFloat::ln10(context=c)
       _ => BigFloat::ln2(context=c)
     }
     expect_close(name, got, wanted, width)
@@ -279,5 +283,58 @@ fn check_bf_domain(
     }
     let got = domain_answer(name, a, b, c)
     expect_same(call, got, wanted, width)
+  }
+}
+
+///|
+fn check_bf_hypot(
+  width : Int32,
+  rows : Array[(String, String, String)],
+) -> Unit raise {
+  let c = Context::new(width)
+  for (a_text, b_text, wanted) in rows {
+    let a = vector_value(a_text, width)
+    let b = vector_value(b_text, width)
+    expect_close(
+      "hypot(\{a_text}, \{b_text})",
+      a.hypot(b, context=c),
+      wanted,
+      width,
+    )
+  }
+}
+
+///|
+fn check_bf_nth_root(
+  width : Int32,
+  rows : Array[(String, Int32, String)],
+) -> Unit raise {
+  let c = Context::new(width)
+  for (text, n, wanted) in rows {
+    let value = vector_value(text, width)
+    expect_close(
+      "nth_root(\{text}, \{n})",
+      value.nth_root(n, context=c),
+      wanted,
+      width,
+    )
+  }
+}
+
+///|
+fn check_bf_powi(
+  width : Int32,
+  rows : Array[(String, String, String)],
+) -> Unit raise {
+  let c = Context::new(width)
+  for (text, exponent, wanted) in rows {
+    let value = vector_value(text, width)
+    let power = bigint_of(exponent)
+    expect_close(
+      "powi(\{text}, \{exponent})",
+      value.powi(power, context=c),
+      wanted,
+      width,
+    )
   }
 }

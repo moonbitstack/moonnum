@@ -332,3 +332,23 @@ test "panic a division by zero stops" {
 test "panic a literal with no digits stops" {
   ignore(Fixed::of_decimal("", 64))
 }
+
+///|
+test "the two constants hold far past the width of their table" {
+  // mpmath 1.4, printed at 302 significant digits.
+  let pi_text = "3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679821480865132823066470938446095505822317253594081284811174502841027019385211055596446229489549303819644288109756659334461284756482337867831652712019091456485669234603486104543266482133936072602491412737"
+  let ln2_text = "0.69314718055994530941723212145817656807550013436025525412068000949339362196969471560586332699641868754200148102057068573368552023575813055703267075163507596193072757082837143519030703862389167347112335011536449795523912047517268157493206515552473413952588295045300709532636664265410423915781495204374043"
+  let digits = 300
+  let bits = Fixed::bits_for_digits(digits)
+  // The last place of a truncated value is the grid's to differ on; everything
+  // before it has to be the reference's.
+  let keep = 290
+  let pi_got = Fixed::pi(bits).to_decimal(digits)
+  if pi_got[:keep] != pi_text[:keep] {
+    fail("pi at \{digits} digits: got \{pi_got}, want \{pi_text}")
+  }
+  let ln2_got = Fixed::ln2(bits).to_decimal(digits)
+  if ln2_got[:keep] != ln2_text[:keep] {
+    fail("ln 2 at \{digits} digits: got \{ln2_got}, want \{ln2_text}")
+  }
+}
