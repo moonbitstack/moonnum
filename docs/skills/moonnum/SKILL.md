@@ -118,6 +118,25 @@ test "expm1 and log1p, at a width a double cannot hold" {
 `BigFloat` answers `nan` where the value is complex and `±inf` at the edges;
 `Fixed` stops the program there, as `Fixed::sqrt` and `Fixed::ln` do.
 
+## The wider field
+
+The roots, the logarithms in other bases and a whole power sit beside `sqrt`,
+`exp`, `ln` and `pow`; on the integer side the counts, the radix spelling and the
+extended gcd are there too:
+
+```moonbit
+test "the wider field at any width" {
+  let c = @moonnum.Context::new(100)
+  let eight = @moonnum.BigFloat::of_int(8, context=c)
+  assert_eq(eight.cbrt(context=c).to_string(), "2.0")
+  assert_eq(eight.nth_root(3, context=c).to_string(), "2.0")
+  assert_eq(eight.powi(2N, context=c).to_string(), "64.0")
+  assert_eq(eight.log2(context=c).to_significant(30), "3.0")
+  assert_eq(@moonnum.to_radix(255N, radix=16), "ff")
+  assert_eq(@moonnum.bit_count(255N).to_string(), "8")
+}
+```
+
 ## Rules that bite
 
 - **Division is a function where it can fail.** `Fraction::divide`,
@@ -126,6 +145,9 @@ test "expm1 and log1p, at a width a double cannot hold" {
   program, because those operators have nowhere to put a refusal.
 - **`Refused` carries where and what.** `Malformed(at~, reason~)` gives the
   offset in UTF-16 code units, which is what `StringView` indexes by.
+- **A whole exponent is `powi`.** `pow` takes a logarithm, multiplies and
+  exponentiates, which costs the last bit and time; `powi` multiplies and rounds
+  once.
 - **A `BigFloat` is only as good as its width.** `Context::new(200)` is 200 bits,
   about sixty digits; a digit costs three and a third bits.
 - **`Fixed` is not a `BigFloat`.** `Fixed` is `mantissa / 2^bits`: its width is

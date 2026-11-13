@@ -151,10 +151,12 @@ test "the five directions, and the one that rounds up" {
 }
 ```
 
-`sqrt`, `exp`, `ln`, `pow` — and `expm1` and `log1p`, which are the same two
-answers taken without ever forming the one that would swallow a small argument —
-the circular and the hyperbolic functions are all there, computed at the width
-asked for from series and formulas — `pi` is
+`sqrt`, `cbrt`, `nth_root`, `exp`, `ln`, `log2`, `log10`, `pow`, `hypot`, `expm1`
+and `log1p` — the last two being the same answers taken without ever forming the
+one that would swallow a small argument — and the circular and hyperbolic
+functions are all there, computed at the width asked for from series and
+formulas. A whole exponent has its own call, `powi`, which multiplies and rounds
+once instead of taking a logarithm and exponentiating it back. `pi` is
 Machin's, `ln 2` is two arctangents of a third, `e` is the exponential of one.
 Nothing in the source is a table of digits that could go stale, and a thousand
 digits costs a few thousand terms and nothing else.
@@ -206,12 +208,12 @@ zero, rather than dropping it.
 
 | On | Functions |
 |:--|:--|
-| integers | `floordiv`, `floor_mod`, `divmod`, `power` (with `modulus~`), `gcd`, `lcm`, `isqrt`, `factorial`, `comb`, `perm`, `bit_length`, `to_bytes`, `of_bytes` |
-| floats | `round_float(d, ndigits~)`, `round_big`, `floor_big`, `ceil_big`, `trunc_big`, `as_ratio`, `as_integer_ratio` |
+| integers | `floordiv`, `floor_mod`, `divmod`, `power` (with `modulus~`), `gcd`, `lcm`, `gcd_ext`, `isqrt`, `factorial`, `comb`, `perm`, `bit_length`, `bit_count`, `ilog`, `to_bytes`, `of_bytes` |
+| floats | `round_float(d, ndigits~)`, `round_big`, `floor_big`, `ceil_big`, `trunc_big`, `as_ratio`, `as_integer_ratio`, `is_integer` |
 | complex | `+ - *`, `Complex::divide`, `Complex::pow`, `abs`, `conjugate` |
-| fractions | `+ - *`, `Fraction::divide`, `Fraction::pow`, `compare`, `floor_big`, `ceil_big`, `round`, `round_big`, `to_double`, `limit_denominator` |
+| fractions | `+ - *`, `Fraction::divide`, `Fraction::pow`, `compare`, `floor_big`, `ceil_big`, `round`, `round_big`, `trunc_big`, `as_integer_ratio`, `to_double`, `limit_denominator` |
 | any of them | `Number::add`, `Number::sub`, `Number::mul`, `Number::divide`, `Number::pow`, `compare_numeric`, `equal_numeric` |
-| `BigFloat` | `+ - * /`, `divide`, `abs`, `sqrt`, `exp`, `expm1`, `ln`, `log1p`, `pow`, `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `sinh`, `cosh`, `tanh`, `asinh`, `acosh`, `atanh`, `round`, `pi`, `e`, `ln2`, `to_complex` |
+| `BigFloat` | `+ - * /`, `divide`, `abs`, `sqrt`, `cbrt`, `nth_root`, `hypot`, `exp`, `expm1`, `ln`, `log1p`, `log2`, `log10`, `pow`, `powi`, `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `sinh`, `cosh`, `tanh`, `asinh`, `acosh`, `atanh`, `round`, `pi`, `e`, `ln2`, `ln10`, `to_complex` |
 | `BigComplex` | `+ - *`, `divide`, `abs`, `arg`, `conjugate`, `sqrt`, `exp`, `ln`, `pow`, `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `sinh`, `cosh`, `tanh`, `asinh`, `acosh`, `atanh`, `to_real` |
 
 `Fraction::pow` takes an integer exponent and stays a ratio — `(2/3) ** 100` is
@@ -236,6 +238,7 @@ tower and gives a float when an exponent is one.
 | `repr_float(d)` | the shortest string that reads back, switching to an exponent at `1e16` and `1e-5` |
 | `float_hex(d)` / `float_of_hex(s)` | the exact hexadecimal form, and back |
 | `repr_complex(z)`, `repr_fraction(f)` | `(1+2j)`, `2j`, `Fraction(3, 4)` |
+| `to_radix(n, radix~)` | the integer in any base from 2 to 36, lowercase, sign in front |
 | `format(value, spec)` | the format-specification mini-language, for any kind |
 | `to_string` | as many digits as the width speaks for — fifteen at 53 bits, sixty at 200 — trailing zeros dropped |
 | `to_decimal(places)`, `to_significant(digits)` | an exact count of places, or of significant digits |
@@ -303,14 +306,19 @@ library that panics on zero is worse than one that says so.
 
 ## Documentation
 
+- [Guided tour](https://moonbitstack.github.io/moonnum/guide.html) — sixteen
+  steps from the first number to a real of any width, every block run and every
+  line of output the line it printed.
 - [Tutorial](https://moonbitstack.github.io/moonnum/01-integers.html) — six
-  pages, one per kind plus formatting and the real of any width. Every output
-  block on them was produced by running the code above it, including the
-  refusals.
+  pages, one per kind plus formatting and the real of any width, for the cases
+  the tour skips.
 - [API reference](https://moonbitstack.github.io/moonnum/api.html) — every
   public item.
 - [Design notes](https://moonbitstack.github.io/moonnum/algorithms.html) — how
   the digits are produced, and why the tower compares exactly.
+- [Playground](https://moonbitstack.github.io/moonnum/playground.html) — four
+  panels that run this library, compiled to JavaScript: a fraction written out,
+  pi to two thousand places, the format language, and a double taken apart.
 - `src/examples/` — `moon run src/examples/01-integers` and friends.
 
 ## Licence
