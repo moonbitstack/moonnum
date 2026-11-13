@@ -50,7 +50,10 @@ jobs:
       - name: examples run
         shell: bash
         run: |
+          # Only the executable ones: the browser engine is a library that the
+          # docs workflow links, so there is nothing to run.
           for dir in src/examples/*/; do
+            grep -q 'pkgtype(kind: "executable")' "$dir/moon.pkg" || continue
             echo "::group::$dir"
             moon run "$dir" --target wasm-gc
             echo "::endgroup::"
