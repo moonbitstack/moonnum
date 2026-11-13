@@ -870,3 +870,120 @@ footer .spacer {
 @supports not selector(::-webkit-scrollbar) {
   html:not(.scrolling) { scrollbar-color: transparent transparent; }
 }
+
+/* The playground: four worked sums on the same sheet. A panel is a card of
+   raised paper; the answer sits in a sunk well with a red rule down its left
+   side, the way a worked result is marked in a notebook. */
+.panels {
+  display: grid;
+  gap: 1.6rem;
+  margin: 1.6rem 0 2rem;
+}
+
+.panel {
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--pen-blue);
+  background: var(--paper-raised);
+  padding: 1rem 1.15rem 1.15rem;
+  box-shadow: 0 6px 18px -18px rgba(0, 0, 0, 0.7);
+}
+
+.panel h3 {
+  margin: 0;
+}
+
+.panel .label {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem 1.3rem;
+  align-items: end;
+  margin: 0.9rem 0 1rem;
+}
+
+.controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+}
+
+.controls input {
+  font-family: var(--mono);
+  font-size: 0.84rem;
+  padding: 0.4rem 0.55rem;
+  min-width: 7ch;
+  color: var(--ink);
+  background: var(--paper-sunk);
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+}
+
+.controls input.wide {
+  min-width: 16ch;
+}
+
+.controls input:focus-visible {
+  outline: 2px solid var(--pen-blue);
+  outline-offset: 1px;
+}
+
+.out {
+  margin: 0;
+  padding: 0.8rem 0.95rem;
+  min-height: 3.6rem;
+  max-height: 17rem;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  line-height: 1.65;
+  background: var(--paper-sunk);
+  border-left: 3px solid var(--pen-red);
+  color: var(--ink);
+}
+
+/* An inner scroll area takes the same pen: faint at rest, darker under the
+   pointer. */
+.out::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.out::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--ink-faint) 34%, transparent);
+  background-clip: content-box;
+  border: 3px solid transparent;
+  border-radius: 999px;
+}
+
+.out:hover::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--ink-faint) 70%, transparent);
+  background-clip: content-box;
+}
+
+.took {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--ink-faint);
+  margin-left: 0.6rem;
+}
+
+.engine-state {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+}
+
+.engine-state.bad {
+  color: var(--pen-red);
+}

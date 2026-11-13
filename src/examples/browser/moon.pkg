@@ -1,0 +1,10 @@
+// The browser engine for `docs/playground.html`. Built for JavaScript only, by
+// the docs workflow, into `docs/engine/`; the artifact is not in the repository.
+pkgtype(kind: "foreign_library")
+
+import {
+  "moonbitlang/core/bigint",
+  "moonbitstack/moonnum",
+}
+
+options(link: { "js": { "exports": ["expand", "pi", "format", "dissect"], "format": "esm" } })

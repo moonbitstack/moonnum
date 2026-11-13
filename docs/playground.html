@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Numbers, live — moonnum</title>
+<meta name="description" content="Expand a fraction, take pi out to two thousand places, try the format language and take a double apart — each panel runs moonnum, compiled to JavaScript.">
+<link rel="stylesheet" href="style.css">
+<script type="module" src="scrollbar.js"></script>
+<script type="module" src="playground.js"></script>
+</head>
+<body>
+
+<header class="bar">
+  <div class="wrap">
+    <a class="wordmark" href="index.html">moonnum<span class="dot">.</span></a>
+    <nav>
+      <a href="guide.html">Guide</a>
+      <a href="playground.html" aria-current="page">Playground</a>
+      <a href="api.html">API</a>
+      <a href="algorithms.html">Algorithms</a>
+      <a href="https://github.com/moonbitstack/moonnum">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<article class="lesson">
+  <div class="folio"><span>Playground</span><span>Run the library</span></div>
+  <h1>The sheet, working itself out</h1>
+  <p class="lede">
+    Four sums worked on the page. Nothing here is re-implemented in JavaScript:
+    each panel calls this library, compiled to JavaScript by the docs workflow,
+    and prints the answer it returned.
+  </p>
+
+  <p class="engine-state" id="engine-state">loading the engine…</p>
+
+  <div class="panels">
+
+    <section class="panel">
+      <div class="label">one</div>
+      <h3>A fraction, written out</h3>
+      <p>
+        Every fraction is a terminating or a repeating decimal, and which one it
+        is depends on the denominator. Rounding is done once, at the place you
+        ask for.
+      </p>
+      <div class="controls">
+        <label>numerator
+          <input id="expand-n" type="text" value="1" inputmode="numeric">
+        </label>
+        <label>denominator
+          <input id="expand-d" type="text" value="7" inputmode="numeric">
+        </label>
+        <label>places
+          <input id="expand-p" type="text" value="60" inputmode="numeric" class="wide">
+        </label>
+      </div>
+      <pre class="out" id="expand-out" aria-live="polite"></pre>
+      <p class="took" id="expand-out-took"></p>
+    </section>
+
+    <section class="panel">
+      <div class="label">two</div>
+      <h3>Pi, from a series</h3>
+      <p>
+        No table of digits: the value is computed at the width that holds the
+        places you ask for, by Machin's formula, and rounded once.
+      </p>
+      <div class="controls">
+        <label>places
+          <input id="pi-p" type="text" value="100" inputmode="numeric" class="wide">
+        </label>
+      </div>
+      <pre class="out" id="pi-out" aria-live="polite"></pre>
+      <p class="took" id="pi-out-took"></p>
+    </section>
+
+    <section class="panel">
+      <div class="label">three</div>
+      <h3>The format language</h3>
+      <p>
+        One specification string, any kind of number. Fill and alignment, sign,
+        the alternate form, grouping, precision, and a type letter —
+        <code>d</code>, <code>f</code>, <code>e</code>, <code>%</code>,
+        <code>x</code>, <code>b</code> and the rest.
+      </p>
+      <div class="controls">
+        <label>value
+          <input id="format-value" type="text" value="1234567" class="wide">
+        </label>
+        <label>specification
+          <input id="format-spec" type="text" value="015,d" class="wide">
+        </label>
+      </div>
+      <pre class="out" id="format-out" aria-live="polite"></pre>
+      <p class="took" id="format-out-took"></p>
+    </section>
+
+    <section class="panel">
+      <div class="label">four</div>
+      <h3>A double, taken apart</h3>
+      <p>
+        A float is not the decimal it looks like. This is the value it really
+        holds, the shortest text that reads back as it, and the bits in
+        hexadecimal.
+      </p>
+      <div class="controls">
+        <label>a number
+          <input id="dissect-value" type="text" value="0.1" class="wide">
+        </label>
+      </div>
+      <pre class="out" id="dissect-out" aria-live="polite"></pre>
+      <p class="took" id="dissect-out-took"></p>
+    </section>
+
+  </div>
+
+  <p class="note">
+    <strong>Where the numbers come from.</strong> The engine is
+    <code>src/examples/browser</code>, built for JavaScript into
+    <code>docs/engine/</code> by the docs workflow. It is not checked in: the
+    page you are reading was published with a build of the library at the
+    version in <a href="https://github.com/moonbitstack/moonnum">the
+    repository</a>.
+  </p>
+
+  <nav class="pager">
+    <a href="guide.html">← Guide</a>
+    <a class="next" href="api.html">API reference →</a>
+  </nav>
+</article>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>moonnum · Apache-2.0</span>
+    <a href="https://github.com/moonbitstack/moonnum">source</a>
+    <a href="api.html">api</a>
+    <a href="algorithms.html">design</a>
+    <span class="spacer">built for MoonBit</span>
+  </div>
+</footer>
+
+</body>
+</html>
