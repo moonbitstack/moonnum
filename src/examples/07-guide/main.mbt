@@ -17,11 +17,14 @@ fn main raise {
     let value = @moonnum.parse(text)
     println("\{text} -> \{value}")
   }
-  let mixed = @moonnum.parse("1") + @moonnum.parse("1/3") + @moonnum.parse("0.5")
+  let mixed = @moonnum.parse("1") +
+    @moonnum.parse("1/3") +
+    @moonnum.parse("0.5")
   println("1 + 1/3 + 0.5 = \{mixed}")
   let bigger = @moonnum.parse("9007199254740993").compare_numeric(
-    @moonnum.parse("9007199254740992.0"),
-  ) > 0
+      @moonnum.parse("9007199254740992.0"),
+    ) >
+    0
   println("9007199254740993 > 9007199254740992.0 is \{bigger}")
 
   // 3. Integer division that agrees with itself.
@@ -39,7 +42,11 @@ fn main raise {
   // 5. Writing an integer in another base.
   println(@moonnum.to_radix(0x1a2b3cN, radix=32))
   println(@moonnum.to_radix(-255N, radix=16))
-  println(@moonnum.ilog(@moonnum.parse_int("10000000000000000000000000000000000000007")).to_string())
+  println(
+    @moonnum.ilog(
+      @moonnum.parse_int("10000000000000000000000000000000000000007"),
+    ).to_string(),
+  )
 
   // 6. A float, read and written honestly.
   println(@moonnum.repr_float(0.1))

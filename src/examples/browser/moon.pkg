@@ -7,4 +7,11 @@ import {
   "moonbitstack/moonnum",
 }
 
-options(link: { "js": { "exports": ["expand", "pi", "format", "dissect"], "format": "esm" } })
+options(
+  link: {
+    "js": {
+      "exports": [ "expand", "pi", "format", "dissect" ],
+      "format": "esm",
+    },
+  },
+)

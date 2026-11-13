@@ -306,9 +306,9 @@ library that panics on zero is worse than one that says so.
 
 ## Documentation
 
-- [Guided tour](https://moonbitstack.github.io/moonnum/guide.html) — sixteen
-  steps from the first number to a real of any width, every block run and every
-  line of output the line it printed.
+- [Guided tour](https://moonbitstack.github.io/moonnum/guide.html) — one pass
+  from the first number to a real of any width, every block run and every line
+  of output the line it printed.
 - [Tutorial](https://moonbitstack.github.io/moonnum/01-integers.html) — six
   pages, one per kind plus formatting and the real of any width, for the cases
   the tour skips.
