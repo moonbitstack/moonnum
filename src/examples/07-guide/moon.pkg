@@ -1,0 +1,7 @@
+// A runnable example, and the program behind the guide in `docs/guide.html`:
+// `python scripts/check_docs.py --examples` compares the two.
+pkgtype(kind: "executable")
+
+import {
+  "moonbitstack/moonnum",
+}

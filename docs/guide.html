@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A guided tour — moonnum</title>
+<meta name="description" content="One pass through moonnum: integers, floats, complex numbers, fractions, the format language, and a real of any width.">
+<link rel="stylesheet" href="style.css">
+<script type="module" src="scrollbar.js"></script>
+</head>
+<body>
+
+<header class="bar">
+  <div class="wrap">
+    <a class="wordmark" href="index.html">moonnum<span class="dot">.</span></a>
+    <nav>
+      <a href="guide.html" aria-current="page">Guide</a>
+      <a href="playground.html">Playground</a>
+      <a href="api.html">API</a>
+      <a href="algorithms.html">Algorithms</a>
+      <a href="https://github.com/moonbitstack/moonnum">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<article class="lesson">
+  <div class="folio"><span>Guide</span><span>Start here</span></div>
+  <h1>One pass through the library</h1>
+  <p class="lede">
+    Sixteen short steps: install it, read and write the four kinds, format them,
+    then take a real out to whatever width the work needs. Every block below was
+    run, and every line under it is what the run printed.
+  </p>
+
+  <h3>Step 1. Install, and import</h3>
+  <p>
+    One package, no dependencies of its own. It runs on <code>wasm</code>,
+    <code>wasm-gc</code>, <code>js</code> and <code>native</code>.
+  </p>
+
+<pre><code>moon add moonbitstack/moonnum</code></pre>
+
+<pre><code>import { "moonbitstack/moonnum" }</code></pre>
+
+  <h3>Step 2. A number, read from text</h3>
+  <p>
+    Reading is where a numeric library is judged: the prefix, the underscore
+    between two digits, the sign, the surrounding space. <code>base=0</code>
+    means the text says which base it is in.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>let count = @moonnum.parse_int("0xff_ec", base=0)
+println("\{count} and \{count.bit_length()} bits wide")</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>65516 and 16 bits wide</code></pre>
+    </div>
+  </div>
+
+  <h3>Step 3. Four kinds, one parser</h3>
+  <p>
+    <code>parse</code> reads a literal and gives back a <code>Number</code> of
+    whichever kind the literal spells — an integer, a ratio, a float, a complex
+    number.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>for text in ["7", "1/3", "0.5", "3+4j"] {
+  let value = @moonnum.parse(text)
+  println("\{text} -> \{value}")
+}</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>7 -> 7
+1/3 -> 1/3
+0.5 -> 0.5
+3+4j -> (3+4j)</code></pre>
+    </div>
+  </div>
+
+  <h3>Step 4. Mixing them, and comparing exactly</h3>
+  <p>
+    Addition follows the tower — integer, fraction, float, complex — and stops
+    at the first kind that can hold the answer. Comparison does not: an integer
+    and a float are compared as the values they are, not as two floats.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>let mixed = @moonnum.parse("1") + @moonnum.parse("1/3") + @moonnum.parse("0.5")
+println("1 + 1/3 + 0.5 = \{mixed}")
+let bigger = @moonnum.parse("9007199254740993").compare_numeric(
+  @moonnum.parse("9007199254740992.0"),
+) > 0
+println("9007199254740993 > 9007199254740992.0 is \{bigger}")</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>1 + 1/3 + 0.5 = 1.8333333333333333
+9007199254740993 > 9007199254740992.0 is true</code></pre>
+    </div>
+  </div>
+
+  <p class="note">
+    <strong>Why the second line matters.</strong> As doubles both numbers are
+    <code>9007199254740992.0</code>, so a float-first comparison answers
+    <code>false</code>. The integer has the larger value and the answer says so.
+  </p>
+
+  <h3>Step 5. Division that agrees with itself</h3>
+  <p>
+    <code>//</code> rounds towards negative infinity and <code>%</code> takes the
+    sign of the divisor, so the two always reconstruct the dividend.
+    <code>divmod</code> gives both in one call.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>let (quotient, remainder) = @moonnum.divmod(-7N, 2N)
+println("-7 // 2 = \{quotient}, -7 % 2 = \{remainder}")
+println("-7 // 2 * 2 + -7 % 2 = \{quotient * 2N + remainder}")</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>-7 // 2 = -4, -7 % 2 = 1
+-7 // 2 * 2 + -7 % 2 = -7</code></pre>
+    </div>
+  </div>
+
+  <h3>Step 6. Powers, roots and counts</h3>
+  <p>
+    With a modulus, a negative exponent is the modular inverse; without one it is
+    refused, because an integer cannot hold the answer. The counting functions
+    are the ones a numeric programmer reaches for next.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>println(@moonnum.power(3N, -1N, modulus=7N).to_string())
+println(@moonnum.power(2N, 1000N, modulus=97N).to_string())
+println(@moonnum.isqrt(@moonnum.power(10N, 40N)).to_string())
+println(@moonnum.comb(@moonnum.parse_int("100"), 50N).to_string())
+println(@moonnum.bit_count(255N).to_string())</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>5
+36
+100000000000000000000
+100891344545564193334812497256
+8</code></pre>
+    </div>
+  </div>
+
+  <h3>Step 7. The same number, written in another base</h3>
+  <p>
+    <code>to_radix</code> is the writing side of <code>parse_int</code>'s
+    <code>base</code>, for any base from two to thirty-six. <code>ilog</code> is
+    the exponent of the largest power of the base that still fits.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>println(@moonnum.to_radix(0x1a2b3cN, radix=32))
+println(@moonnum.to_radix(-255N, radix=16))
+println(@moonnum.ilog(@moonnum.parse_int("10000000000000000000000000000000000000007")).to_string())</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>1kaps
+-ff
+40</code></pre>
+    </div>
+  </div>
+
+  <h3>Step 8. A float, read and written honestly</h3>
+  <p>
+    <code>repr_float</code> is the shortest text that reads back as the same
+    double. The exact value is one call away, and it is not the decimal it looks
+    like.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>println(@moonnum.repr_float(0.1))
+println(@moonnum.repr_float(0.1 + 0.2))
+println(@moonnum.float_hex(0.1))
+let (numerator, denominator) = @moonnum.as_integer_ratio(0.1)
+println("\{numerator}/\{denominator}")
+println(@moonnum.is_integer(2.5).to_string())</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>0.1
+0.30000000000000004
+0x1.999999999999ap-4
+3602879701896397/36028797018963968
+false</code></pre>
+    </div>
+  </div>
+
+  <h3>Step 9. Rounding is a separate decision</h3>
+  <p>
+    <code>round_float</code> rounds halves to even, on the value rather than on
+    the text. Printing a number and rounding it are two different calls, and
+    neither happens behind your back.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>println(@moonnum.round_float(2.675, ndigits=2).to_string())
+println(@moonnum.round_float(0.5, ndigits=0).to_string())
+println(@moonnum.round_float(1.5, ndigits=0).to_string())</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>2.67
+0
+2</code></pre>
+    </div>
+  </div>
+
+  <h3>Step 10. Complex numbers, written the way people write them</h3>
+  <p>
+    <code>3+4j</code> reads, and the same spelling comes back out — including
+    the negative zero, which is part of the value and not a formatting accident.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>let z = @moonnum.parse_complex("3+4j")
+println(z.to_string())
+println((z * z).to_string())
+println(z.abs().to_string())
+println(@moonnum.repr_complex(@moonnum.parse_complex("-0-1j")))</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>(3+4j)
+(-7+24j)
+5
+(-0-1j)</code></pre>
+    </div>
+  </div>
+
+  <h3>Step 11. Fractions that stay exact</h3>
+  <p>
+    A fraction is a numerator over a denominator in lowest terms with a positive
+    denominator. Arithmetic on them is exact; <code>limit_denominator</code> is
+    the one place it deliberately is not.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>let third = @moonnum.parse_fraction("1/3")
+println((third + third + third).to_string())
+println(@moonnum.parse_fraction("0.1").to_string())
+println(third.limit_denominator(max=100N).to_string())
+println(@moonnum.format(@moonnum.parse("22/7"), ".6f"))</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>1
+1/10
+1/3
+3.142857</code></pre>
+    </div>
+  </div>
+
+  <h3>Step 12. One format language for every kind</h3>
+  <p>
+    Fill, alignment, sign, the alternate form, zero padding that joins the
+    grouping, and a type letter for each kind. The same specification works on
+    integers, floats, complex numbers and fractions.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>println(@moonnum.format_int(1234567N, "015,d"))
+println(@moonnum.format_int(255N, "#010_x"))
+println(@moonnum.format_float(0.25, ".2%"))
+println(@moonnum.format_float(-0.0, "z"))
+println(@moonnum.format_float(1234.5678, ">12.2f"))</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>000,001,234,567
+0x000_00ff
+25.00%
+0.0
+     1234.57</code></pre>
+    </div>
+  </div>
+
+  <h3>Step 13. A real at a width you choose</h3>
+  <p>
+    <code>Fixed</code> is <code>mantissa / 2^bits</code>: every step truncates to
+    one grid, so a whole computation carries one width. Fifty digits of it are
+    enough to see the point.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>let bits = @moonnum.Fixed::bits_for_digits(50)
+let two = @moonnum.Fixed::of_int(2, bits)
+println(two.sqrt().to_string())
+println((two * @moonnum.Fixed::pi(bits)).to_decimal(10))</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>1.41421356237309504880168872420969807856967187537695
+6.2831853072</code></pre>
+    </div>
+  </div>
+
+  <h3>Step 14. A real at any width</h3>
+  <p>
+    <code>BigFloat</code> keeps the width on the value, so a number carries the
+    precision it was made at wherever it sits on the line. Two hundred bits, and
+    the wider field that comes with it: a cube root, the common logarithm, and a
+    whole power taken by squaring.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>let c = @moonnum.Context::new(200)
+let big = @moonnum.BigFloat::of_int(2, context=c)
+println(big.sqrt(context=c).to_significant(40))
+println(@moonnum.BigFloat::pi(context=c).to_significant(40))
+println(big.cbrt(context=c).to_significant(40))
+println(@moonnum.BigFloat::ln10(context=c).to_significant(40))
+println(big.powi(10N, context=c).to_significant(40))</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>1.41421356237309504880168872420969807857
+3.141592653589793238462643383279502884197
+1.25992104989487316476721060727822835057
+2.302585092994045684017991454684364207601
+1024.0</code></pre>
+    </div>
+  </div>
+
+  <h3>Step 15. When the answer is complex</h3>
+  <p>
+    A function whose result is real answers <code>nan</code> for a value outside
+    the reals, rather than quietly returning something of another type. The value
+    exists anyway, one promotion away, written out at the call site.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>let minus_one = -@moonnum.BigFloat::one(context=c)
+println(minus_one.sqrt(context=c).to_string())
+println(minus_one.to_complex().sqrt(context=c).to_string())</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>nan
+(0.0+1.0j)</code></pre>
+    </div>
+  </div>
+
+  <h3>Step 16. A refusal says no, and says why</h3>
+  <p>
+    Every fallible call raises one error type. A parse failure names the offset
+    where the text stopped making sense, counted in UTF-16 code units so it can
+    be used to slice the input.
+  </p>
+
+  <div class="pair">
+    <div>
+      <div class="label">moonbit</div>
+<pre><code>let refused = @moonnum.parse_int("12x", base=0).to_string() catch {
+  @moonnum.Malformed(at~, reason~) => "\{reason} at \{at}"
+  _ => "refused"
+}
+println(refused)</code></pre>
+    </div>
+    <div>
+      <div class="label">output</div>
+<pre><code>unexpected trailing character at 2</code></pre>
+    </div>
+  </div>
+
+  <h3>Where to go next</h3>
+  <p>
+    Each of the four kinds has a chapter of its own, with the cases the tour
+    skipped: <a href="01-integers.html">integers</a>,
+    <a href="02-floats.html">floats</a>, <a href="03-complex.html">complex
+    numbers</a>, <a href="04-fractions.html">fractions</a>, the
+    <a href="05-format.html">format language</a> and
+    <a href="06-bigfloat.html">the real of any width</a>. The
+    <a href="algorithms.html">design notes</a> say where the digits come from,
+    and the <a href="api.html">API reference</a> lists every public item.
+  </p>
+
+  <nav class="pager">
+    <a href="index.html">← Home</a>
+    <a class="next" href="01-integers.html">Tutorial: Integers →</a>
+  </nav>
+</article>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>moonnum · Apache-2.0</span>
+    <a href="https://github.com/moonbitstack/moonnum">source</a>
+    <a href="01-integers.html">next</a>
+    <span class="spacer">built for MoonBit</span>
+  </div>
+</footer>
+
+</body>
+</html>

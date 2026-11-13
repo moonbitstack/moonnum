@@ -103,7 +103,8 @@ HEAD = """<!doctype html>
   <div class="wrap">
     <a class="wordmark" href="index.html">moonnum<span class="dot">.</span></a>
     <nav>
-      <a href="01-integers.html">Tutorial</a>
+      <a href="guide.html">Guide</a>
+      <a href="playground.html">Playground</a>
       <a href="api.html" aria-current="page">API</a>
       <a href="algorithms.html">Algorithms</a>
       <a href="https://github.com/moonbitstack/moonnum">GitHub</a>
@@ -267,7 +268,8 @@ def render_doc(text: str) -> str:
         block = block.strip("\n")
         if not block.strip():
             continue
-        fence = re.match(r"^```[a-z]*\n(.*?)\n?```$", block.strip(), re.S)
+        # The fence line carries a language and sometimes `nocheck` after it.
+        fence = re.match(r"^```[^\n]*\n(.*?)\n?```$", block.strip(), re.S)
         if fence:
             out.append("<pre><code>" + html.escape(fence.group(1)) + "</code></pre>")
             continue

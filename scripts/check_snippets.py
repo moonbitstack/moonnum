@@ -1,14 +1,18 @@
-"""Compile every MoonBit block in README.md and docs/skills/*/SKILL.md against this module's source.
+"""Compile every MoonBit block in README.md, the skill and a site page.
 
 A reader pastes these blocks into a project, so each one has to compile as written. The blocks of
 one file are read in order, the way the page reads: a block may use a name that an earlier block of
 the same file defined. `<!-- nocheck -->` on the line above a block skips it; a block opened with
 ```` ```mbt native ```` is checked on the native target only.
 
+A page in `docs/` is read the same way: its `<div class="label">moonbit</div>` blocks are
+the blocks, and the `output` blocks next to them are what the code printed, not code.
+
 Usage: python scripts/check_snippets.py [--moon moon] [file ...]
 """
 
 import argparse
+import html
 import re
 import shutil
 import subprocess
@@ -54,7 +58,22 @@ def packages(module, src, deps):
     return found
 
 
+HTML_BLOCK = re.compile(
+    r'<div class="label">moonbit</div>\s*<pre><code>(.*?)</code></pre>', re.S)
+
+
+def page_blocks(path):
+    """The MoonBit blocks of a site page, in the order the page reads."""
+    text = path.read_text(encoding="utf-8")
+    for match in HTML_BLOCK.finditer(text):
+        line = text[: match.start(1)].count("\n") + 1
+        yield line, False, html.unescape(match.group(1))
+
+
 def blocks(path):
+    if path.suffix in (".html", ".htm"):
+        yield from page_blocks(path)
+        return
     text = path.read_text(encoding="utf-8")
     for m in FENCE.finditer(text):
         if m.group(1) or "nocheck" in m.group(3):
@@ -95,7 +114,11 @@ def main():
         return 0
     subprocess.run([args.moon, "update"], cwd=ROOT, capture_output=True)
     aliases = packages(module, src, deps)
-    files = [Path(f) for f in args.files] or [ROOT / "README.md", *sorted((ROOT / "docs" / "skills").glob("*/SKILL.md"))]
+    files = [Path(f) for f in args.files] or [
+        ROOT / "README.md",
+        *sorted((ROOT / "docs" / "skills").glob("*/SKILL.md")),
+        ROOT / "docs" / "guide.html",
+    ]
     failed = 0
     for file in files:
         file = file if file.is_absolute() else ROOT / file

@@ -12,7 +12,7 @@ what catches a value that was right when it was written and is not any more,
 which is the failure a reader trusts and cannot see.
 
     python scripts/check_docs.py               # fast: names and links
-    python scripts/check_docs.py --examples    # also runs the five programs
+    python scripts/check_docs.py --examples    # also runs the programs behind the pages
 """
 
 from __future__ import annotations
@@ -37,6 +37,7 @@ FORBIDDEN = ["Refused::", "format_complex(", "repr_float_of"]
 # Each tutorial page is backed by one runnable example. The numbers in the
 # page's output blocks have to come out of that program.
 TUTORIALS = {
+    "guide.html": "src/examples/07-guide",
     "01-integers.html": "src/examples/01-integers",
     "02-floats.html": "src/examples/02-floats",
     "03-complex.html": "src/examples/03-complex",

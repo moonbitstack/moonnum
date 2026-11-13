@@ -13,7 +13,8 @@
   <div class="wrap">
     <a class="wordmark" href="index.html">moonnum<span class="dot">.</span></a>
     <nav>
-      <a href="01-integers.html">Tutorial</a>
+      <a href="guide.html">Guide</a>
+      <a href="playground.html">Playground</a>
       <a href="api.html" aria-current="page">API</a>
       <a href="algorithms.html">Algorithms</a>
       <a href="https://github.com/moonbitstack/moonnum">GitHub</a>
@@ -551,7 +552,8 @@
 <p class="sig">pub fn <span class="name">BigFloat::to_complex</span>(Self) -&gt; BigComplex</p>
 <div class="doc"><p>The promotion: the same value with an imaginary part of zero at the same width.</p>
 <p>Exact — a real number is a complex number already, and nothing is rounded by saying so. This is how a caller reaches the principal square root of a negative, or the logarithm of one:</p>
-<p>``<code>moonbit nocheck let c = @moonnum.Context::new(200) (-@moonnum.BigFloat::one(context=c)).to_complex().sqrt(context=c)  // 0 + 1j </code>``</p></div>
+<pre><code>let c = @moonnum.Context::new(200)
+(-@moonnum.BigFloat::one(context=c)).to_complex().sqrt(context=c)  // 0 + 1j</code></pre></div>
 </div>
 <div class="item">
 <p class="sig">pub fn <span class="name">BigFloat::to_decimal</span>(Self, Int32) -&gt; String</p>
