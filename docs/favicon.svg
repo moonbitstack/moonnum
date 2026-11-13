@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="moonnum">
+  <rect width="64" height="64" rx="9" fill="#f6f3e7"/>
+  <g stroke="#4a6ea5" stroke-opacity="0.34" stroke-width="1">
+    <path d="M0 16h64M0 32h64M0 48h64M16 0v64M32 0v64M48 0v64"/>
+  </g>
+  <path d="M8 0v64" stroke="#b23b2e" stroke-opacity="0.42" stroke-width="2"/>
+  <circle cx="32" cy="18.5" r="5.6" fill="#26313d"/>
+  <rect x="17" y="29.5" width="30" height="5" rx="2.5" fill="#b23b2e"/>
+  <circle cx="32" cy="45.5" r="5.6" fill="#26313d"/>
+</svg>

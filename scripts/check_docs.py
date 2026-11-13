@@ -138,6 +138,9 @@ def main() -> int:
         if REPO not in text:
             problems.append(f"{where}: no link back to {REPO}")
 
+        if 'rel="icon"' not in text:
+            problems.append(f"{where}: no favicon")
+
         for target in re.findall(r'href="([^"]+)"', text):
             target = html.unescape(target)
             if target.startswith(("http://", "https://", "mailto:", "#")):
