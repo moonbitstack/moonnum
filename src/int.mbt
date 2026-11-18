@@ -115,7 +115,7 @@ pub fn parse_int(
   if i < n {
     malformed(i, "unexpected trailing character")
   }
-  let magnitude = @bigint.BigInt::from_string(digits.to_string(), radix~)
+  let magnitude = scanned(digits.to_string(), radix~)
   if neg {
     -magnitude
   } else {

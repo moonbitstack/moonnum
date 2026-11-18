@@ -190,7 +190,7 @@ test "the order of two values, and of the specials" {
   // A value a double cannot tell from its neighbour: the comparison is exact, so
   // the integer one above 2^53 is still the greater.
   let big = BigFloat::of_bigint(
-    @bigint.BigInt::from_string("9007199254740993"),
+    scanned("9007199254740993"),
     context=Context::new(200),
   )
   let as_double = BigFloat::of_double(9007199254740992.0)

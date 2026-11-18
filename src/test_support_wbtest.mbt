@@ -37,9 +37,9 @@ fn bigint_of(text : String) -> @bigint.BigInt {
     return 0N
   }
   if text.has_prefix("-") {
-    -@bigint.BigInt::from_string(slice(text, 1, text.length()))
+    -scanned(slice(text, 1, text.length()))
   } else {
-    @bigint.BigInt::from_string(text)
+    scanned(text)
   }
 }
 

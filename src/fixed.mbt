@@ -85,7 +85,7 @@ pub fn Fixed::of_scaled(
   places : Int32,
   bits : Int32,
 ) -> Fixed {
-  let numerator = @bigint.BigInt::from_string(integer) << bits
+  let numerator = scanned(integer) << bits
   { mantissa: numerator / pow10(places), bits, }
 }
 
@@ -402,10 +402,7 @@ pub fn Fixed::of_decimal(text : String, bits : Int32) -> Fixed {
   if digits == "" {
     abort("Fixed::of_decimal: no digits in `\{text}`")
   }
-  let numerator = {
-    mantissa: @bigint.BigInt::from_string(digits) << bits,
-    bits,
-  }
+  let numerator = { mantissa: scanned(digits) << bits, bits, }
   let magnitude = if places >= 0 { places } else { 0 - places }
   let scale = { mantissa: pow10(magnitude) << bits, bits, }
   let value = if places >= 0 { numerator / scale } else { numerator * scale }

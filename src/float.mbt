@@ -205,7 +205,7 @@ fn signed_decimal_to_double(
   if point < -400 {
     return if neg { -0.0 } else { 0.0 }
   }
-  let mantissa = @bigint.BigInt::from_string(body)
+  let mantissa = scanned(body)
   let shift = point - body.length()
   if shift >= 0 {
     ratio_to_double(neg, mantissa * pow10(shift), 1N)
@@ -330,7 +330,7 @@ pub fn float_of_hex(text : StringView) -> Double raise Refused {
   if i < n {
     malformed(i, "unexpected trailing character")
   }
-  let mantissa = @bigint.BigInt::from_string(hex_digits.to_string(), radix=16)
+  let mantissa = scanned(hex_digits.to_string(), radix=16)
   let scale = exp - 4 * frac_len
   if scale > 2000 {
     return if neg { -@double.infinity } else { @double.infinity }

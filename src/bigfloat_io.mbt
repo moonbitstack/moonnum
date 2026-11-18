@@ -307,7 +307,7 @@ fn parse_digits(
       reason="the decimal exponent is past what this width carries",
     )
   }
-  let whole = @bigint.BigInt::from_string(digits.to_string())
+  let whole = scanned(digits.to_string())
   let value = if scale >= 0 {
     rounded_at(whole * pow10(scale), 0, c.precision, c.rounding, false)
   } else {

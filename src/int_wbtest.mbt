@@ -220,7 +220,7 @@ test "ilog is the greatest exponent whose power does not pass n" {
   for value in [2N, 7N, 123456789012345678901234567890N] {
     for base in [2N, 5N, 10N, 36N] {
       let k = ilog(value, base~)
-      let below = power(base, k.to_string() |> @bigint.BigInt::from_string)
+      let below = power(base, scanned(k.to_string()))
       let above = below * base
       if !(below <= value && value < above) {
         fail("ilog(\{value}, \{base}) = \{k} does not bracket the value")

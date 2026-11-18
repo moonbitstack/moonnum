@@ -145,11 +145,11 @@ pub fn parse_fraction(text : StringView) -> Fraction raise Refused {
     if tail < n {
       malformed(tail, "unexpected trailing character")
     }
-    let denominator = @bigint.BigInt::from_string(den_digits.to_string())
+    let denominator = scanned(den_digits.to_string())
     if denominator == 0N {
       raise ZeroDivision
     }
-    let numerator = @bigint.BigInt::from_string(int_text)
+    let numerator = scanned(int_text)
     make(if neg { -numerator } else { numerator }, denominator)
   } else {
     let frac_digits = StringBuilder()
@@ -211,7 +211,7 @@ pub fn parse_fraction(text : StringView) -> Fraction raise Refused {
       malformed(tail, "unexpected trailing character")
     }
     let fraction_text = frac_digits.to_string()
-    let numerator = @bigint.BigInt::from_string(int_text + fraction_text)
+    let numerator = scanned(int_text + fraction_text)
     let signed = if neg { -numerator } else { numerator }
     let scale = exp - fraction_text.length()
     if scale >= 0 {

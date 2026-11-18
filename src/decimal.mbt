@@ -5,6 +5,15 @@
 // rounded.
 
 ///|
+/// The value of digits this module has already scanned. Digits that fail to parse here are a bug
+/// in the scanner, not bad input, so they abort instead of raising.
+fn scanned(text : StringView, radix~ : Int32 = 10) -> @bigint.BigInt {
+  @string.parse_bigint(text, radix~) catch {
+    _ => abort("moonnum: not digits: " + text.to_owned())
+  }
+}
+
+///|
 /// Ten raised to a non-negative power.
 fn pow10(e : Int32) -> @bigint.BigInt {
   if e <= 0 {
